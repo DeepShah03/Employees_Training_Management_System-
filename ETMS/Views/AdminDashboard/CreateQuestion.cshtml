@@ -1,0 +1,109 @@
+﻿@{
+    ViewData["Title"] = "Create Question";
+}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Create Question - @ViewBag.TestType</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="CreateQuestion" method="post">
+                <!-- ✅ Hidden field to include TestType in form submission -->
+                <input type="hidden" name="testType" value="@ViewBag.TestType" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Question:</label>
+                    <input type="text" name="QuestionText" required class="form-control" placeholder="Enter question here..." />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Option A:</label>
+                        <input type="text" name="OptionA" required class="form-control" placeholder="Enter option A" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Option B:</label>
+                        <input type="text" name="OptionB" required class="form-control" placeholder="Enter option B" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Option C:</label>
+                        <input type="text" name="OptionC" required class="form-control" placeholder="Enter option C" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Option D:</label>
+                        <input type="text" name="OptionD" required class="form-control" placeholder="Enter option D" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Correct Answer:</label>
+                    <select name="CorrectAnswer" class="form-select">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <a asp-action="TestManagement" class="btn btn-secondary me-2">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> Save Question
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+@* @{
+    ViewData["Title"] = "Create Question";
+}
+<h2>Create Question - @ViewBag.TestType</h2>
+
+<form asp-action="CreateQuestion" method="post">
+    <!-- ✅ Hidden field to include TestType in form submission -->
+    <input type="hidden" name="testType" value="@ViewBag.TestType" />
+
+    <label>Question:</label>
+    <input type="text" name="QuestionText" required class="form-control" />
+
+    <label>Option A:</label>
+    <input type="text" name="OptionA" required class="form-control" />
+
+    <label>Option B:</label>
+    <input type="text" name="OptionB" required class="form-control" />
+
+    <label>Option C:</label>
+    <input type="text" name="OptionC" required class="form-control" />
+
+    <label>Option D:</label>
+    <input type="text" name="OptionD" required class="form-control" />
+
+    <label>Correct Answer:</label>
+    <select name="CorrectAnswer" class="form-select">
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+    </select>
+
+    <button type="submit" class="btn btn-success mt-3">Save Question</button>
+    <a asp-action="TestManagement" class="btn btn-secondary mt-3">Back to List</a>
+</form>
+ *@

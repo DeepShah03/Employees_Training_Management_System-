@@ -1,0 +1,373 @@
+﻿@using System.Linq
+
+@{
+    ViewData["Title"] = "Manage Training";
+}
+<head>
+    <title>@ViewData["Title"] - Trainer Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            color: #ffffff;
+            /* background: linear-gradient(to right, #121212, #1e1e1e);  */
+            /*             background: linear-gradient(to right, #000000, #150c0c);
+         */
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 270px;
+            position: fixed;
+            background: linear-gradient(to bottom, #1e1e1e, #252525); /* Dark sidebar gradient */
+            /* background: linear-gradient(to bottom, #212f3f, #3b0909); */
+            padding-top: 20px;
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+        }
+
+            .sidebar.collapsed {
+                width: 101px;
+            }
+
+            .sidebar .nav-link {
+                color: #ffffff;
+                font-size: 16px;
+                padding: 15px;
+                display: flex;
+                align-items: center;
+                transition: background 0.3s, padding-left 0.3s;
+                white-space: nowrap;
+                border-radius: 5px;
+            }
+
+                .sidebar .nav-link i {
+                    min-width: 52px;
+                    text-align: center;
+                    color: #aaaaaa; /* Soft gray icons */
+                    transition: color 0.3s;
+                }
+
+                .sidebar .nav-link:hover {
+                    background-color: #333;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #444;
+                    font-weight: bold;
+                    border-left: 4px solid blue; /* Highlight effect */
+                }
+
+                    .sidebar .nav-link.active i {
+                        color: blue; /* Active icon color */
+                    }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding-left: 0;
+            }
+
+                .sidebar.collapsed .nav-link span {
+                    display: none;
+                }
+
+        .navbar {
+            background: linear-gradient(to right, #1e1e1e, #252525); /* Dark gradient navbar */
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1); /* Subtle shadow */
+        }
+
+        .navbar-brand, .navbar-user {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+            .content.full-width {
+                margin-left: 80px;
+            }
+
+        .card {
+            background: linear-gradient(to right, #222, #2a2a2a); /* Dark card gradient */
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+                box-shadow: 0px 4px 15px rgba(255, 0, 0, 0.3); /* Soft glow effect */
+            }
+    </style>
+</head>
+
+<body>
+    <nav class="sidebar d-flex flex-column p-3" id="sidebar">
+        <ul class="nav flex-column" style="    margin-top: -11px;">
+            <li class="navbar">
+                <button class="menu-button" onclick="toggleSidebar()">☰</button>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " asp-controller="TrainerDashboard" asp-action="Index">
+                    <i class="fas fa-home"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="TrainerDashboard" asp-action="ManageModules">
+                    <i class="fa-sharp fa-solid fa-people-roof"></i>
+                    <span>Manage Modules</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" asp-controller="TrainerDashboard" asp-action="ManageTraining">
+                    <i class="fa-sharp fa-solid fa-folder-open"></i> <span>Manage Training</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link  " asp-controller="TrainerDashboard" asp-action="ManageProjects">
+                    <i class="fa-solid fa-water"></i>
+                    <span>Manage Projects</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="TrainerDashboard" asp-action="ManagePro">
+                    <i class="fa-solid fa-soap"></i>
+                    <span>Assign Projects</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeProgress" asp-action="Index">
+                    <i class="fas fa-chart-line"></i> <span>Employee Progress</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link btn btn-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="content" id="content">
+        <nav class="navbar" style="margin-top:-19px;">
+            <span class="navbar-brand">Trainer Dashboard</span>
+            <span class="navbar-user">Welcome,@ViewBag.TrainerName</span>
+        </nav>
+
+        <div class="container mt-4">
+           
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" style="margin-top: 25px; margin-right: 140px;">
+                    <h2 class="mb-4" style="color:black;">Assign Modules to Employees</h2>
+
+                    <!-- Assignment Form -->
+                    <form method="post" asp-action="AssignModule">
+                        <div class="card p-3 mb-4">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="employeeId" class="form-label">Employee</label>
+                                    <select name="employeeId" id="employeeId" class="form-select" required>
+                                        <option value="">-- Select Employee --</option>
+                                        @foreach (var employee in Model)
+                                        {
+                                            <option value="@employee.Id">@employee.UserName</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <!-- Module Dropdown -->
+                                <div class="col-md-4">
+                                    <label for="moduleId" class="form-label">Module</label>
+                                    <select name="moduleId" id="moduleId" class="form-select" required>
+                                        <option value="">-- Select Module --</option>
+                                        @foreach (var module in ViewBag.Modules)
+                                        {
+                                            <option value="@module.Id">@module.SubjectName</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label  class="form-label">Assign</label><br>
+                                    <button type="submit" class="btn btn-primary" style="width: -webkit-fill-available;">
+                                        Assign Module
+                                    </button>
+                                </div>
+                            </div>
+                            @* <button type="submit" class="btn btn-primary">Assign Module</button> *@
+                        </div>
+                    </form>
+
+                    <!-- Display Assigned Modules -->
+                    <div class="card p-3">
+                        <h4 class="mb-3">Assigned Modules</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th colspan="4">Assigned Modules</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var employee in Model)
+                                {
+                                    <tr>
+                                        <td>@employee.UserName</td>
+                                        @for (int i = 0; i < 4; i++)
+                                        {
+                                            <td>
+                                                @if (i < employee.AssignedModules.Count)
+                                                {
+                                                    <form method="post" asp-action="UnassignModule" class="d-inline">
+                                                        <input type="hidden" name="employeeId" value="@employee.Id" />
+                                                        <input type="hidden" name="moduleId" value="@employee.AssignedModules[i].Module.Id" />
+                                                        @employee.AssignedModules[i].Module.SubjectName
+                                                        <button type="submit" class="btn btn-danger btn-sm">Unassign</button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">---</span>
+                                                }
+                                            </td>
+                                        }
+                                        <td>
+                                            @if (employee.AssignedModules != null && employee.AssignedModules.Count > 0)
+                                            // ✅ Ensure AssignedModules is not null
+                                            {
+                                                <form method="post" asp-action="UnassignAllModules" class="d-inline">
+                                                    <input type="hidden" name="employeeId" value="@employee.Id" />
+                                                    <button type="submit" class="btn btn-warning btn-sm">Unassign All</button>
+                                                </form>
+                                            }
+
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                      
+               </main>
+
+        </div>
+        
+    </div>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.getElementById("content");
+            sidebar.classList.toggle("collapsed");
+            content.classList.toggle("full-width");
+        }
+    </script>
+</body>
+
+
+
+
+
+
+
+@* <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" style="margin-top: 25px;">
+    <h2 class="mb-4">Assign Modules to Employees</h2>
+
+    <div class="card p-4 shadow-sm">
+        @foreach (var employee in Model)
+        {
+            <div class="border-bottom pb-4 mb-4">
+                <h4 class="mb-3 text-primary">@employee.UserName</h4>
+
+                <!-- Module Assignment Form -->
+                <form asp-action="AssignModule" method="post" class="d-flex align-items-center gap-3">
+                    <input type="hidden" name="employeeId" value="@employee.Id" />
+
+                    <select name="moduleId" class="form-select w-50" required>
+                        <option value="">-- Select Module --</option>
+                        @if (ViewBag.Modules != null)
+                        {
+                            foreach (var module in ViewBag.Modules)
+                            {
+                                <option value="@module.Id">@module.SubjectName</option>
+                            }
+                        }
+                    </select>
+
+                    <button type="submit" class="btn btn-success">Assign Module</button>
+                </form>
+
+                <!-- Assigned Modules -->
+                <h5 class="mt-4">Assigned Modules:</h5>
+                @if (employee.AssignedModules != null && employee.AssignedModules.Count > 0)
+                {
+                    <ul class="list-group w-75">
+                        @foreach (var assigned in employee.AssignedModules)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">@assigned.Module?.SubjectName</span>
+                                <form asp-action="UnassignModule" method="post" class="d-inline">
+                                    <input type="hidden" name="employeeId" value="@employee.Id" />
+                                    <input type="hidden" name="moduleId" value="@assigned.Module?.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Unassign</button>
+                                </form>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted fst-italic">No modules assigned.</p>
+                }
+            </div>
+        }
+    </div>
+</main> *@
+
+
+
+@* @foreach (var employee in Model)
+{
+    <h3>@employee.UserName</h3>
+
+    <form asp-action="AssignModule" method="post">
+        <input type="hidden" name="employeeId" value="@employee.Id" />
+
+        <select name="moduleId">
+            @foreach (var module in ViewBag.Modules)
+            {
+                <option value="@module.Id">@module.SubjectName</option>
+            }
+        </select>
+
+        <button type="submit">Assign Module</button>
+    </form>
+
+    <h4>Assigned Modules:</h4>
+    <ul>
+        @foreach (var assigned in employee.AssignedModules)
+        {
+            <li>@assigned.Module.SubjectName</li>
+        }
+    </ul>
+}
+ *@

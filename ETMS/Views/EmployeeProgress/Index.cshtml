@@ -1,0 +1,886 @@
+﻿@model ETMS.Models.EmployeeFeedbackViewModel
+@{
+    ViewData["Title"] = "Employee Progress";
+}
+<head>
+    <title>@ViewData["Title"] - Trainer Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            color: #ffffff;
+            /* background: linear-gradient(to right, #121212, #1e1e1e);  */
+            /*             background: linear-gradient(to right, #000000, #150c0c);
+         */
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 270px;
+            position: fixed;
+            background: linear-gradient(to bottom, #1e1e1e, #252525); /* Dark sidebar gradient */
+            /* background: linear-gradient(to bottom, #212f3f, #3b0909); */
+            padding-top: 20px;
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+        }
+
+            .sidebar.collapsed {
+                width: 101px;
+            }
+
+            .sidebar .nav-link {
+                color: #ffffff;
+                font-size: 16px;
+                padding: 15px;
+                display: flex;
+                align-items: center;
+                transition: background 0.3s, padding-left 0.3s;
+                white-space: nowrap;
+                border-radius: 5px;
+            }
+
+                .sidebar .nav-link i {
+                    min-width: 52px;
+                    text-align: center;
+                    color: #aaaaaa; /* Soft gray icons */
+                    transition: color 0.3s;
+                }
+
+                .sidebar .nav-link:hover {
+                    background-color: #333;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #444;
+                    font-weight: bold;
+                    border-left: 4px solid blue; /* Highlight effect */
+                }
+
+                    .sidebar .nav-link.active i {
+                        color: blue; /* Active icon color */
+                    }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding-left: 0;
+            }
+
+                .sidebar.collapsed .nav-link span {
+                    display: none;
+                }
+
+        .navbar {
+            background: linear-gradient(to right, #1e1e1e, #252525); /* Dark gradient navbar */
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1); /* Subtle shadow */
+        }
+
+        .navbar-brand, .navbar-user {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+            .content.full-width {
+                margin-left: 80px;
+            }
+
+        .card {
+            background: linear-gradient(to right, #222, #2a2a2a); /* Dark card gradient */
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+                box-shadow: 0px 4px 15px rgba(255, 0, 0, 0.3); /* Soft glow effect */
+            }
+    </style>
+</head>
+
+<body>
+    <nav class="sidebar d-flex flex-column p-3" id="sidebar">
+        <ul class="nav flex-column" style="    margin-top: -11px;">
+            <li class="navbar">
+                <button class="menu-button" onclick="toggleSidebar()">☰</button>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " asp-controller="TrainerDashboard" asp-action="Index">
+                    <i class="fas fa-home"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="TrainerDashboard" asp-action="ManageModules">
+                    <i class="fa-sharp fa-solid fa-people-roof"></i>
+                    <span>Manage Modules</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="TrainerDashboard" asp-action="ManageTraining">
+                    <i class="fa-sharp fa-solid fa-folder-open"></i> <span>Manage Training</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link  " asp-controller="TrainerDashboard" asp-action="ManageProjects">
+                    <i class="fa-solid fa-water"></i>
+                    <span>Manage Projects</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="TrainerDashboard" asp-action="ManagePro">
+                    <i class="fa-solid fa-soap"></i>
+                    <span>Assign Projects</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" asp-controller="EmployeeProgress" asp-action="Index">
+                    <i class="fas fa-chart-line"></i> <span>Employee Progress</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link btn btn-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="content" id="content">
+        <nav class="navbar" style="margin-top:-19px;">
+            <span class="navbar-brand">Trainer Dashboard</span>
+            <span class="navbar-user">Welcome,@ViewBag.TrainerName</span>
+        </nav>
+        <div class="container mt-5">
+            <div class="card shadow-lg p-4">
+                <h2 class="text-center mb-4">Employee Progress Feedback</h2>
+
+                <form id="feedbackForm" asp-action="GenerateReport" method="post">
+                    <!-- Employee Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Employee</label>
+                        <select id="employee" name="EmployeeId" class="form-select" required>
+                            <option value="">-- Select Employee --</option>
+                            @if (ViewBag.Employees != null)
+                            {
+                                @foreach (var emp in ViewBag.Employees)
+                                {
+                                    <option value="@emp.Value">@emp.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Test Marks Display -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Test Marks (Auto-filled)</label>
+                        <div id="TestMarks" class="form-control bg-light p-3" style="min-height: 50px;">
+                            <span class="text-muted">Select an employee to view test marks.</span>
+                        </div>
+                    </div>
+
+                    <!-- Project Marks -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Project Marks</label>
+                        <input type="number" id="projectMarks" name="ProjectMarks" class="form-control" placeholder="Enter marks out of 100" required>
+                    </div>
+
+                    <!-- Feedback with Evaluation Questions -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Feedback Evaluation</label>
+
+                        <!-- Punctuality & Attendance -->
+                        <fieldset class="mb-2">
+                            <legend>1. Punctuality & Attendance</legend>
+                            <label><input type="radio" name="feedbackCriteria[1]" value="Timeliness"> Timeliness in attending training sessions</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[1]" value="Break Schedule"> Adherence to break schedules</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[1]" value="Attendance"> Consistency in attendance</label>
+                        </fieldset>
+
+                        <!-- Participation & Engagement -->
+                        <fieldset class="mb-2">
+                            <legend>2. Participation & Engagement</legend>
+                            <label><input type="radio" name="feedbackCriteria[2]" value="Interaction"> Level of interaction during training</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[2]" value="Asking Questions"> Willingness to ask questions</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[2]" value="Group Work"> Contribution to group discussions</label>
+                        </fieldset>
+
+                        <!-- Learning Progress & Knowledge Retention -->
+                        <fieldset class="mb-2">
+                            <legend>3. Learning Progress & Knowledge Retention</legend>
+                            <label><input type="radio" name="feedbackCriteria[3]" value="Assessment Performance"> Performance in assessments</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[3]" value="Application"> Ability to apply learned concepts</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[3]" value="Improvement"> Improvement over time</label>
+                        </fieldset>
+
+                        <!-- Problem-Solving & Critical Thinking -->
+                        <fieldset class="mb-2">
+                            <legend>4. Problem-Solving & Critical Thinking</legend>
+                            <label><input type="radio" name="feedbackCriteria[4]" value="Analysis"> Ability to analyze scenarios</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[4]" value="Troubleshooting"> Approach to troubleshooting issues</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[4]" value="Creativity"> Creativity in problem-solving</label>
+                        </fieldset>
+
+                        <!-- Communication Skills -->
+                        <fieldset class="mb-2">
+                            <legend>5. Communication Skills</legend>
+                            <label><input type="radio" name="feedbackCriteria[5]" value="Clarity"> Clarity in expressing thoughts</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[5]" value="Confidence"> Confidence in presenting information</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[5]" value="Listening"> Active listening skills</label>
+                        </fieldset>
+
+                        <!-- Teamwork & Collaboration -->
+                        <fieldset class="mb-2">
+                            <legend>6. Teamwork & Collaboration</legend>
+                            <label><input type="radio" name="feedbackCriteria[6]" value="Teamwork"> Ability to work effectively in a team</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[6]" value="Support"> Willingness to support peers</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[6]" value="Adaptability"> Adaptability to different team roles</label>
+                        </fieldset>
+
+                        <!-- Adaptability & Learning Agility -->
+                        <fieldset class="mb-2">
+                            <legend>7. Adaptability & Learning Agility</legend>
+                            <label><input type="radio" name="feedbackCriteria[7]" value="Feedback Acceptance"> Readiness to accept feedback</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[7]" value="Learning"> Willingness to learn new concepts</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[7]" value="Training Styles"> Ability to adjust to training styles</label>
+                        </fieldset>
+
+                        <!-- Practical Application & Skill Development -->
+                        <fieldset class="mb-2">
+                            <legend>8. Practical Application & Skill Development</legend>
+                            <label><input type="radio" name="feedbackCriteria[8]" value="Hands-on"> Hands-on implementation of training</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[8]" value="Task Quality"> Quality and accuracy of task completion</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[8]" value="Efficiency"> Efficiency in real-world scenarios</label>
+                        </fieldset>
+
+                        <!-- Professionalism & Work Ethics -->
+                        <fieldset class="mb-2">
+                            <legend>9. Professionalism & Work Ethics</legend>
+                            <label><input type="radio" name="feedbackCriteria[9]" value="Respect"> Respect for trainers and peers</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[9]" value="Discipline"> Discipline in following guidelines</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[9]" value="Accountability"> Accountability for assigned tasks</label>
+                        </fieldset>
+
+                        <!-- Self-Motivation & Initiative -->
+                        <fieldset class="mb-2">
+                            <legend>10. Self-Motivation & Initiative</legend>
+                            <label><input type="radio" name="feedbackCriteria[10]" value="Beyond Basics"> Willingness to go beyond basic requirements</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[10]" value="Proactive"> Proactive approach to learning</label>
+                            <br>
+                            <label><input type="radio" name="feedbackCriteria[10]" value="Additional Resources"> Seeking additional learning resources</label>
+                        </fieldset>
+
+                        <!-- Additional Feedback Textarea -->
+                        <label class="form-label fw-bold mt-3">Additional Feedback</label>
+                        <textarea id="feedback" name="Feedback" class="form-control" rows="4" placeholder="Enter feedback here..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Generate Report</button>
+                </form>
+            </div>
+
+            <!-- Generated Reports -->
+            <div class="card mt-5 shadow-lg">
+                <div class="card-header bg-dark text-white text-center">
+                    <h3>Generated Reports</h3>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Employee</th>
+                                @* <th>Pre-Training Marks</th>
+                                <th>Mid-Training Marks</th>
+                                <th>Post-Training Marks</th>
+                                <th>Project Marks</th>
+                                <th>Feedback</th>
+                                <th>Feedback Criteria</th> <!-- ✅ New Column --> *@
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var report in Model.Reports)
+                            {
+                                <tr id="reportRow_@report.Id">
+                                    <td>@report.Employee?.UserName</td>
+                                    @* <td>@(report.PreTrainingMarks >= 0 ? report.PreTrainingMarks : "Remaining Test")</td>
+                                    <td>@(report.MidTrainingMarks >= 0 ? report.MidTrainingMarks : "Remaining Test")</td>
+                                    <td>@(report.PostTrainingMarks >= 0 ? report.PostTrainingMarks : "Remaining Test")</td>
+                                    <td>@report.ProjectMarks</td>
+                                    <td>@report.Feedback</td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(report.FeedbackCriteria))
+                                        {
+                                            <ul>
+                                                @foreach (var criteria in report.FeedbackCriteria.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                                {
+                                                    <li>@criteria.Trim()</li>
+                                                }
+                                            </ul>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No Criteria Selected</span>
+                                        }
+                                    </td>
+ *@
+
+                                    <td>@report.CreatedAt.ToShortDateString()</td>
+                                    <td>
+                                        <button class="btn btn-info btn-sm view-report" data-id="@report.Id">View</button>
+                                        <button class="btn btn-danger btn-sm delete-report" data-id="@report.Id">Delete</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                 
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Details Modal -->
+        <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-black" id="reportModalLabel" >Employee Full Report</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="reportDetails">
+                            <p class="text-center">Loading...</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).on("click", ".view-report", function () {
+            var reportId = $(this).data("id");
+
+            // Open the modal
+            $("#reportModal").modal("show");
+
+            // Fetch report details via AJAX
+            $.ajax({
+                url: "/EmployeeProgress/GetReportDetails",
+                type: "GET",
+                data: { reportId: reportId },
+                success: function (data) {
+                    // Format report details dynamically
+                    var reportHtml = `
+                            <ul class="list-group">
+                                <li class="list-group-item"><strong>Employee:</strong> ${data.employeeName}</li>
+                                <li class="list-group-item"><strong>Pre-Training Marks:</strong> ${data.preTrainingMarks}</li>
+                                <li class="list-group-item"><strong>Mid-Training Marks:</strong> ${data.midTrainingMarks}</li>
+                                <li class="list-group-item"><strong>Post-Training Marks:</strong> ${data.postTrainingMarks}</li>
+                                <li class="list-group-item"><strong>Project Marks:</strong> ${data.projectMarks}</li>
+                                <li class="list-group-item"><strong>Feedback:</strong> ${data.feedback}</li>
+                                <li class="list-group-item"><strong>Feedback Criteria:</strong>
+                                    <ul>${data.feedbackCriteria.map(c => `<li>${c}</li>`).join("")}</ul>
+                                </li>
+                                <li class="list-group-item"><strong>Date:</strong> ${data.createdAt}</li>
+                            </ul>
+                        `;
+
+                    $("#reportDetails").html(reportHtml);
+                },
+                error: function () {
+                    $("#reportDetails").html("<p class='text-danger'>Error loading report details.</p>");
+                }
+            });
+        });
+        
+        
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.getElementById("content");
+            sidebar.classList.toggle("collapsed");
+            content.classList.toggle("full-width");
+        }
+        $(document).ready(function () {
+            $("#employee").change(function () {
+                var employeeId = $(this).val();
+                if (employeeId) {
+                    $.ajax({
+                        url: "/EmployeeProgress/GetEmployeeTestMarks",
+                        type: "GET",
+                        data: { employeeId: employeeId },
+                        success: function (data) {
+                            console.log("API Response:", data);
+
+                            let preTraining = "Remaining Test";
+                            let midTraining = "Remaining Test";
+                            let postTraining = "Remaining Test";
+
+                            if (Array.isArray(data) && data.length > 0) {
+                                data.forEach(function (test) {
+                                    let testType = test.testType.toLowerCase(); // Convert to lowercase for consistency
+                                    if (testType === "pre-training" || testType === "pretraining") preTraining = test.marks;
+                                    if (testType === "mid-training" || testType === "midtraining") midTraining = test.marks;
+                                    if (testType === "post-training" || testType === "posttraining") postTraining = test.marks;
+                                });
+                            }
+
+                            var marksHtml = `
+                                    <ul class='list-group'>
+                                        <li class='list-group-item'><strong>Pre-Training:</strong> ${preTraining}</li>
+                                        <li class='list-group-item'><strong>Mid-Training:</strong> ${midTraining}</li>
+                                        <li class='list-group-item'><strong>Post-Training:</strong> ${postTraining}</li>
+                                    </ul>`;
+
+                            $("#TestMarks").html(marksHtml);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error:", xhr.responseText);
+                            $("#TestMarks").html("<span class='text-danger'>Error fetching test marks.</span>");
+                        }
+                    });
+                } else {
+                    $("#TestMarks").html("<span class='text-muted'>Select an employee to view test marks.</span>");
+                }
+            });
+        });
+
+        $(document).on("click", ".delete-report", function () {
+            var reportId = $(this).data("id");
+
+            if (confirm("Are you sure you want to delete this report?")) {
+                $.ajax({
+                    url: "/EmployeeProgress/DeleteReport",
+                    type: "POST",
+                    data: { reportId: reportId },
+                    success: function () {
+                        $("#reportRow_" + reportId).remove();
+                    },
+                    error: function () {
+                        alert("Error deleting report.");
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* @model ETMS.Models.EmployeeFeedbackViewModel
+
+<div class="container mt-5">
+    <div class="card shadow-lg p-4">
+        <h2 class="text-center mb-4">Employee Progress Feedback</h2>
+
+        <form id="feedbackForm" asp-action="GenerateReport" method="post">
+            <!-- Employee Selection -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Select Employee</label>
+                <select id="employee" name="EmployeeId" class="form-select" required>
+                    <option value="">-- Select Employee --</option>
+                    @if (ViewBag.Employees != null)
+                    {
+                        @foreach (var emp in ViewBag.Employees)
+                        {
+                            <option value="@emp.Value">@emp.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Test Marks Display -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Test Marks (Auto-filled)</label>
+                <div id="TestMarks" class="form-control bg-light p-3" style="min-height: 50px;">
+                    <span class="text-muted">Select an employee to view test marks.</span>
+                </div>
+            </div>
+
+            <!-- Project Marks -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Project Marks</label>
+                <input type="number" id="projectMarks" name="ProjectMarks" class="form-control" placeholder="Enter marks out of 100" required>
+            </div>
+
+            <!-- Feedback -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Feedback</label>
+                <textarea id="feedback" name="Feedback" class="form-control" rows="4" placeholder="Enter feedback here..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Generate Report</button>
+        </form>
+    </div>
+
+    <!-- Generated Reports -->
+    <div class="card mt-5 shadow-lg">
+        <div class="card-header bg-dark text-white text-center">
+            <h3>Generated Reports</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover">
+           
+                <thead class="table-dark">
+                    <tr>
+                        <th>Employee</th>
+                        <th>Pre-Training Marks</th>
+                        <th>Mid-Training Marks</th>
+                        <th>Post-Training Marks</th>
+                        <th>Project Marks</th>
+                        <th>Feedback</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var report in Model.Reports)
+                    {
+                        <tr id="reportRow_@report.Id">
+                            <td>@report.Employee?.UserName</td>
+                            <td>@(report.PreTrainingMarks >= 0 ? report.PreTrainingMarks : "Remaining Test")</td>
+                            <td>@(report.MidTrainingMarks >= 0 ? report.MidTrainingMarks : "Remaining Test")</td>
+                            <td>@(report.PostTrainingMarks >= 0 ? report.PostTrainingMarks : "Remaining Test")</td>
+                            <td>@report.ProjectMarks</td>
+                            <td>@report.Feedback</td>
+                            <td>@report.CreatedAt.ToShortDateString()</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm delete-report" data-id="@report.Id">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#employee").change(function () {
+            var employeeId = $(this).val();
+            if (employeeId) {
+                $.ajax({
+                    url: "/EmployeeProgress/GetEmployeeTestMarks",
+                    type: "GET",
+                    data: { employeeId: employeeId },
+                    success: function (data) {
+                        console.log("API Response:", data);
+
+                        let preTraining = "Remaining Test";
+                        let midTraining = "Remaining Test";
+                        let postTraining = "Remaining Test";
+
+                        if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(function (test) {
+                                let testType = test.testType.toLowerCase(); // Convert to lowercase for consistency
+                                if (testType === "pre-training" || testType === "pretraining") preTraining = test.marks;
+                                if (testType === "mid-training" || testType === "midtraining") midTraining = test.marks;
+                                if (testType === "post-training" || testType === "posttraining") postTraining = test.marks;
+                            });
+                        }
+
+                        var marksHtml = `
+                            <ul class='list-group'>
+                                <li class='list-group-item'><strong>Pre-Training:</strong> ${preTraining}</li>
+                                <li class='list-group-item'><strong>Mid-Training:</strong> ${midTraining}</li>
+                                <li class='list-group-item'><strong>Post-Training:</strong> ${postTraining}</li>
+                            </ul>`;
+
+                        $("#TestMarks").html(marksHtml);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error:", xhr.responseText);
+                        $("#TestMarks").html("<span class='text-danger'>Error fetching test marks.</span>");
+                    }
+                });
+            } else {
+                $("#TestMarks").html("<span class='text-muted'>Select an employee to view test marks.</span>");
+            }
+        });
+    });
+
+    $(document).on("click", ".delete-report", function () {
+        var reportId = $(this).data("id");
+
+        if (confirm("Are you sure you want to delete this report?")) {
+            $.ajax({
+                url: "/EmployeeProgress/DeleteReport",
+                type: "POST",
+                data: { reportId: reportId },
+                success: function () {
+                    $("#reportRow_" + reportId).remove();
+                },
+                error: function () {
+                    alert("Error deleting report.");
+                }
+            });
+        }
+    });
+
+
+</script> *@
+@* <script>
+    $(document).ready(function () {
+        $("#employee").change(function () {
+            var employeeId = $(this).val();
+            if (employeeId) {
+                $.ajax({
+                    url: "/EmployeeProgress/GetEmployeeTestMarks",
+                    type: "GET",
+                    data: { employeeId: employeeId },
+                    success: function (data) {
+                        console.log("API Response:", data);
+
+                        // Standardizing category names
+                        var categories = {
+                            "pre-training": null,
+                            "mid-training": null,
+                            "post-training": null
+                        };
+
+                        // Process received test data
+                        if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(function (test) {
+                                var testTypeKey = test.testType.trim().toLowerCase(); // Normalize input
+                                if (categories.hasOwnProperty(testTypeKey)) {
+                                    categories[testTypeKey] = test.marks; // Assign marks
+                                }
+                            });
+                        }
+
+                        // Build test marks display
+                        var marksHtml = "<div class='border p-3 bg-light'>";
+
+                        Object.entries(categories).forEach(([key, marks]) => {
+                            var formattedKey = key.replace("-", " ").replace(/\b\w/g, c => c.toUpperCase()); // Proper case
+                            marksHtml += `<h5 class='fw-bold'>${formattedKey}</h5>`;
+                            marksHtml += marks !== null
+                                ? `<p class='text-success'>Marks: <strong>${marks}</strong></p>`
+                                : `<p class='text-danger'>Remaining Test</p>`;
+                        });
+
+                        marksHtml += "</div>";
+                        $("#TestMarks").html(marksHtml);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error:", xhr.responseText);
+                        $("#TestMarks").html("<span class='text-danger'>Error fetching test marks.</span>");
+                    }
+                });
+            } else {
+                $("#TestMarks").html("<span class='text-muted'>Select an employee to view test marks.</span>");
+            }
+        });
+    });
+
+    $(document).ready(function () {
+        $(".delete-report").click(function () {
+            var reportId = $(this).data("id"); // This should be a GUID
+            var row = $("#reportRow_" + reportId);
+
+            if (confirm("Are you sure you want to delete this report?")) {
+                $.ajax({
+                    url: "/EmployeeProgress/DeleteReport",
+                    type: "POST",
+                    data: { reportId: reportId },
+                    success: function (response) {
+                        if (response.success) {
+                            row.fadeOut(300, function () { $(this).remove(); });
+                        } else {
+                            alert("Error: " + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert("Failed to delete report.");
+                    }
+                });
+            }
+        });
+    });
+
+
+</script> *@
+
+
+
+
+
+
+
+@* @model ETMS.Models.EmployeeFeedbackViewModel
+
+<div class="container mt-4">
+    <h2>Employee Progress Feedback</h2>
+
+    <form id="feedbackForm" asp-action="GenerateReport" method="post">
+        <div class="mb-3">
+            <label class="form-label">Select Employee</label>
+            <select id="employee" name="EmployeeId" class="form-control" required>
+                <option value="">-- Select Employee --</option>
+                @if (ViewBag.Employees != null)
+                {
+                    @foreach (var emp in ViewBag.Employees)
+                    {
+                        <option value="@emp.Value">@emp.Text</option>
+                    }
+                }
+            </select>
+
+        </div>
+
+        <label for="TestMarks">Test Marks (Auto-filled)</label>
+        <div id="TestMarks" class="form-control" style="background-color: #f5f5f5;"></div>
+
+
+        <div class="mb-3">
+            <label class="form-label">Project Marks</label>
+            <input type="number" id="projectMarks" name="ProjectMarks" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Feedback</label>
+            <textarea id="feedback" name="Feedback" class="form-control" rows="4" required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+    </form>
+
+    <h3 class="mt-4">Generated Reports</h3>
+    <table class="table table-dark">
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Test Marks</th>
+                <th>Project Marks</th>
+                <th>Feedback</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var report in Model.Reports)
+            {
+                <tr>
+                    <td>@report.Employee.UserName</td>
+                    <td>@report.TestMarks</td>
+                    <td>@report.ProjectMarks</td>
+                    <td>@report.Feedback</td>
+                    <td>@report.CreatedAt.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Load jQuery First -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap (if used) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Your Custom JavaScript -->
+<script src="~/js/site.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#employee").change(function () {
+            var employeeId = $(this).val();
+            if (employeeId) {
+                $.ajax({
+                    url: "/EmployeeProgress/GetEmployeeTestMarks",
+                    type: "GET",
+                    data: { employeeId: employeeId },
+                    success: function (data) {
+                        console.log("API Response:", data);
+                        if (Array.isArray(data) && data.length > 0) {
+                            var marksHtml = "<ul>";
+                            data.forEach(function (test) {
+                                marksHtml += `<li><strong>${test.testType}</strong>: ${test.marks}</li>`;
+                            });
+                            marksHtml += "</ul>";
+                            $("#TestMarks").html(marksHtml);
+                        } else {
+                            $("#TestMarks").html("No test records found.");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error:", xhr.responseText);
+                        $("#TestMarks").html("Error fetching test marks.");
+                    }
+                });
+            } else {
+                $("#TestMarks").html("");
+            }
+        });
+    });
+</script>
+
+ *@

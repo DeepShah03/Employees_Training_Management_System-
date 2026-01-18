@@ -1,0 +1,106 @@
+﻿@model ETMS.Models.Question
+@{
+    ViewData["Title"] = "Edit Question";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning text-white">
+            <h4 class="mb-0">Edit Question</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="EditQuestion" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Test Type:</label>
+                    <input asp-for="TestType" class="form-control" required readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Question:</label>
+                    <textarea asp-for="QuestionText" class="form-control" rows="3" required placeholder="Enter the question here..."></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Option A:</label>
+                        <input asp-for="OptionA" class="form-control" required placeholder="Enter option A" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Option B:</label>
+                        <input asp-for="OptionB" class="form-control" required placeholder="Enter option B" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Option C:</label>
+                        <input asp-for="OptionC" class="form-control" required placeholder="Enter option C" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Option D:</label>
+                        <input asp-for="OptionD" class="form-control" required placeholder="Enter option D" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Correct Answer:</label>
+                    <select asp-for="CorrectAnswer" class="form-select">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <a asp-action="ViewQuestions" class="btn btn-secondary me-2">
+                        <i class="bi bi-arrow-left"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Update Question
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+@* @model ETMS.Models.Question
+@{
+    ViewData["Title"] = "Edit Question";
+}
+
+<h2>Edit Question</h2>
+
+<form asp-action="EditQuestion" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <label>Test Type:</label>
+    <input asp-for="TestType" class="form-control" required />
+
+    <label>Question:</label>
+    <textarea asp-for="QuestionText" class="form-control" required></textarea>
+
+    <label>Option A:</label>
+    <input asp-for="OptionA" class="form-control" required />
+
+    <label>Option B:</label>
+    <input asp-for="OptionB" class="form-control" required />
+
+    <label>Option C:</label>
+    <input asp-for="OptionC" class="form-control" required />
+
+    <label>Option D:</label>
+    <input asp-for="OptionD" class="form-control" required />
+
+    <label>Correct Answer:</label>
+    <input asp-for="CorrectAnswer" class="form-control" required />
+
+    <button type="submit" class="btn btn-success mt-3">Update</button>
+    <a asp-action="ViewQuestions" class="btn btn-secondary mt-3">Cancel</a>
+</form>
+ *@

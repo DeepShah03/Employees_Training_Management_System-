@@ -1,0 +1,308 @@
+﻿@model ETMS.Models.ViewModels.ModuleMaterialsViewModel
+@{
+    ViewData["Title"] = "Employee Dashboard";
+}
+<head>
+    <title>@ViewData["Title"] - Employee Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* General Styles */
+        body {
+            color: black;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            height: 100vh;
+            width: 260px;
+            position: fixed;
+            background: linear-gradient(to bottom, #0d253f, #101820);
+            padding-top: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+
+            .sidebar.collapsed {
+                width: 80px;
+            }
+
+            .sidebar .nav-link {
+                color: #ffffff;
+                font-size: 16px;
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                transition: all 0.3s ease;
+            }
+
+                .sidebar .nav-link i {
+                    min-width: 45px;
+                    text-align: center;
+                    transition: color 0.3s;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #172a45;
+                    font-weight: bold;
+                    border-left: 0px solid #00aaff;
+                }
+
+                    .sidebar .nav-link.active i {
+                        color: #00aaff;
+                    }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding-left: 0;
+            }
+
+                .sidebar.collapsed .nav-link span {
+                    display: none;
+                }
+
+        /* Navbar */
+        .navbar {
+            background: #172a45;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0, 170, 255, 0.2);
+        }
+
+        .navbar-brand, .navbar-user {
+            color: #ffffff;
+            font-size: 18px;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: #00aaff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Content */
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+            .content.full-width {
+                margin-left: 80px;
+            }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(to right, #1b3a57, #122438);
+            color: #ffffff;
+            border: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+                box-shadow: 0px 4px 12px rgba(0, 170, 255, 0.3);
+            }
+
+            .card i {
+                font-size: 35px;
+                margin-bottom: 10px;
+            }
+
+        .text-info {
+            color: #00c3ff !important;
+        }
+
+        .text-success {
+            color: #00ffcc !important;
+        }
+
+        .text-warning {
+            color: #ffaa00 !important;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar d-flex flex-column p-3" id="sidebar">
+        <ul class="nav flex-column" style="margin-top: -11px;">
+            <li class="navbar">
+                <button class="menu-button" onclick="toggleSidebar()">☰</button>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="Index">
+                    <i class="fas fa-home"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyTest">
+                    <i class="fas fa-file-alt"></i> <span>My Tests</span>
+                </a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link active" asp-controller="EmployeeDashboard" asp-action="MyTraining">
+                    <i class="fas fa-book-open"></i> <span>My Training</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="AssignedProjects">
+                    <i class="fas fa-tasks"></i> <span>My Projects</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="TestResults">
+                    <i class="fas fa-chart-bar"></i> <span>My Performance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyFeedback">
+                    <i class="fas fa-comment-dots"></i> <span>My Feedback</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link btn btn-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="content" id="content">
+        <nav class="navbar" style="margin-top: -20px; margin-left: -20px;">
+            <span class="navbar-brand">Employee Dashboard</span>
+            <span class="navbar-user">Welcome, @ViewBag.Username</span>
+        </nav>
+
+        <div class="container mt-4">
+            <h2 class="text-center text-primary fw-bold">📚 View Materials for @Model.ModuleName</h2>
+            @* <a asp-action="MyTraining" class="btn btn-outline-secondary mb-3">
+                <i class="fas fa-arrow-left"></i> Back
+            </a> *@
+
+            <!-- Video Materials -->
+            <h3 class="text-primary mt-4"><i class="fas fa-video"></i> Videos</h3>
+            @if (Model.LearningMaterials.Any(m => m.FileType == "Video"))
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-dark text-center">
+                            <tr>
+                                <th>Title</th>
+                                <th>Preview</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var material in Model.LearningMaterials.Where(m => m.FileType == "Video"))
+                            {
+                                <tr class="text-center">
+                                    <td>@System.IO.Path.GetFileNameWithoutExtension(material.FileName)</td>
+                                    <td>
+                                        <video width="200" height="120" controls class="rounded shadow">
+                                            <source src="@material.FilePath" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </td>
+                                    
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No videos available.</p>
+            }
+
+            <!-- PDF Materials -->
+            <h3 class="text-primary mt-4"><i class="fas fa-file-pdf"></i> PDFs</h3>
+            @if (Model.LearningMaterials.Any(m => m.FileType == "PDF"))
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-dark text-center">
+                            <tr>
+                                <th>Title</th>
+                                <th>File</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var material in Model.LearningMaterials.Where(m => m.FileType == "PDF"))
+                            {
+                                <tr class="text-center">
+                                    <td>@System.IO.Path.GetFileNameWithoutExtension(material.FileName)</td>
+                                    <td>
+                                        <a href="@material.FilePath" target="_blank" class="btn btn-primary">
+                                            <i class="fas fa-file-pdf"></i> Open PDF
+                                        </a>
+                                    </td>
+                                    
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No PDFs available.</p>
+            }
+            <a asp-action="MyTraining" class="btn btn-outline-secondary mb-3">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.getElementById("content");
+            sidebar.classList.toggle("collapsed");
+            content.classList.toggle("full-width");
+        }
+    </script>
+</body>
+
+
+
+@* @model ETMS.Models.ViewModels.ModuleMaterialsViewModel
+
+@{
+    ViewData["Title"] = "View Materials - " + Model.ModuleName;
+}
+
+<h2>@Model.ModuleName - Learning Materials</h2>
+
+@if (Model.LearningMaterials.Any())
+{
+    <ul>
+        @foreach (var material in Model.LearningMaterials)
+        {
+            <li>
+                <strong>@material.FileName</strong> (@material.FileType)
+                <br />
+                <a href="@material.FilePath" target="_blank">View / Download</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No learning materials available for this module.</p>
+}
+<a asp-action="MyTraining">Back to My Training</a>
+ *@

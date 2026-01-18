@@ -1,0 +1,741 @@
+﻿@model List<ETMS.Models.Question>
+@{
+    ViewBag.Title = "Online Test";
+    var testDuration = ViewBag.TestDuration ?? 60; // Default to 60 minutes
+}
+<style>
+    /* General Page Styling */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Header */
+    .header {
+        background-color: #343a40;
+        color: white;
+        padding: 15px;
+        text-align: left;
+        font-size: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Question Card */
+    .question-card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background: #fff;
+        padding: 20px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background: #007bff;
+        color: white;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 5px 5px 0 0;
+    }
+
+    /* Question Navigation Buttons */
+    .question-nav {
+        width: 47px;
+        height: 40px;
+        font-size: 16px;
+        margin: 3px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Status Colors */
+    .answered {
+        background: #28a745 !important; /* Green */
+        color: white;
+    }
+
+    .review {
+        background: #6f42c1 !important; /* Purple */
+        color: white;
+        /* animation: blink 1s infinite alternate; */
+    }
+
+    .visited {
+        background: #fd7e14 !important; /* Orange */
+        color: white;
+    }
+
+    .current {
+        background: #007bff; /* Blue */
+        color: white;
+    }
+
+    /* Blinking effect for review */
+    @@keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+   /*  timer */
+    #timer {
+        color: red;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    /* Legend Styling */
+    .legend-item {
+        display: flex;
+        align-items: center;
+       /*  margin: 5px 0; */
+        margin: 11px 3px;
+    }
+
+    .legend-box {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        margin-right: 10px;
+        border-radius: 3px;
+        border: 1px solid #000;
+    }
+
+        /* Apply existing status colors */
+        .legend-box.answered {
+            background: #28a745 !important; /* Green */
+        }
+
+        .legend-box.review {
+            background: #6f42c1 !important; /* Purple */
+        }
+
+        .legend-box.visited {
+            background: #fd7e14 !important; /* Orange */
+        }
+
+        .legend-box.current {
+            background: #007bff !important; /* Blue */
+        }
+
+</style>
+
+<div class="container" style="padding-top: 9px;max-width: 1525px;width: 1465px;margin-left: -9px;">
+    <header class="header">
+        <h4>@ViewBag.TestType Online Test</h4>
+        <div>
+            @* <strong>Test ID:</strong> @ViewBag.TestType | *@
+            <strong>Name:</strong> @ViewBag.Username |
+            <strong>Email:</strong> @ViewBag.Email
+        </div>
+    </header>
+    <form id="testForm" asp-action="SubmitAnswers" method="post">
+        <input type="hidden" name="testType" value="@ViewBag.TestType" />
+    <div class="row mt-3">
+        <!-- Left Section: Questions -->
+        <div class="col-md-8">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var question = Model[i];
+                <div class="card mb-3 question-card" id="question-@i" style="display: @(i == 0 ? "block" : "none");">
+                    <div class="card-header">
+                        <h5>Question @(i + 1)</h5>
+                        <span>Marks (Correct: 1 | Wrong: 0)</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="fw-bold">@Html.Raw(question.QuestionText)</p>
+                        <input type="hidden" name="answers[@i].QuestionId" value="@question.Id" />
+
+                        <!-- Multiple-Choice Options -->
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input option" name="answers[@i].SelectedOption" value="A" id="option-@i-A">
+                            <label class="form-check-label" for="option-@i-A">@question.OptionA</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input option" name="answers[@i].SelectedOption" value="B" id="option-@i-B">
+                            <label class="form-check-label" for="option-@i-B">@question.OptionB</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input option" name="answers[@i].SelectedOption" value="C" id="option-@i-C">
+                            <label class="form-check-label" for="option-@i-C">@question.OptionC</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input option" name="answers[@i].SelectedOption" value="D" id="option-@i-D">
+                            <label class="form-check-label" for="option-@i-D">@question.OptionD</label>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="d-flex justify-content-between mt-3">
+                    <!-- Navigation Buttons -->
+                    <button type="button" class="btn btn-secondary" id="prevBtn">❮ Previous</button>
+                    <button type="button" class="btn btn-warning" id="unmarkReview">Mark Review</button>
+                    <button type="button" class="btn btn-danger" id="clearResponse">Clear Response</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn">Next ❯</button>
+
+                @* <button class="btn btn-secondary" id="prevBtn">❮ Previous</button>
+                <button class="btn btn-warning" id="unmarkReview">Mark Review</button>
+                <button class="btn btn-danger" id="clearResponse">Clear Response</button>
+                <button class="btn btn-primary" id="nextBtn">Next ❯</button> *@
+            </div>
+        </div>
+
+        <!-- Right Section: Timer & Navigation -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Answered Questions: <span id="answeredCount">0</span></div>
+                <div class="card-body">
+                    <h5>Time Left: <span id="timer">@testDuration:00</span></h5>
+                    <div class="d-flex flex-wrap">
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                                <button type="button" class="btn btn-outline-secondary question-nav" data-index="@i">@(i + 1)</button>
+                        }
+                    </div>
+                    <div class="mt-3">
+                        <h5>Legend:</h5>
+                        <div class="d-flex flex-wrap">
+                            <div class="legend-item">
+                                <span class="legend-box answered"></span> Answered
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-box review"></span> Marked for Review
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-box visited"></span> Clear Response
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-box current"></span> Current Question
+                            </div>
+                            
+                        </div>
+                    </div>
+                   
+                        <button type="submit" class="btn btn-success" id="submitTest">✅ Submit</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+</div>
+
+<!-- JavaScript -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let currentQuestion = 0;
+        let totalQuestions = document.querySelectorAll(".question-card").length;
+        let questionButtons = document.querySelectorAll(".question-nav");
+        let options = document.querySelectorAll(".option");
+
+        function updateQuestionDisplay() {
+            document.querySelectorAll(".question-card").forEach((card, index) => {
+                card.style.display = index === currentQuestion ? "block" : "none";
+            });
+
+            questionButtons.forEach(btn => btn.classList.remove("current"));
+            questionButtons[currentQuestion]?.classList.add("current");
+        }
+
+        options.forEach(option => {
+            option.addEventListener("change", function () {
+                let qBtn = questionButtons[currentQuestion];
+                qBtn.classList.add("answered");
+                qBtn.classList.remove("review", "visited");
+                updateAnsweredCount();
+            });
+        });
+
+        function updateAnsweredCount() {
+            let answered = document.querySelectorAll(".question-nav.answered").length;
+            document.getElementById("answeredCount").innerText = answered;
+        }
+
+        // ✅ Handle Click on Question Number
+        questionButtons.forEach((btn, index) => {
+            btn.addEventListener("click", function (event) {
+                event.preventDefault(); // Stop unintended form submission
+                currentQuestion = index;
+                updateQuestionDisplay();
+            });
+        });
+
+        document.getElementById("nextBtn").addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent form submission
+            if (currentQuestion < totalQuestions - 1) currentQuestion++;
+            updateQuestionDisplay();
+        });
+
+        document.getElementById("prevBtn").addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent form submission
+            if (currentQuestion > 0) currentQuestion--;
+            updateQuestionDisplay();
+        });
+
+        document.getElementById("clearResponse").addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent form submission
+            let selectedOptions = document.querySelectorAll(`input[name="answers[${currentQuestion}].SelectedOption"]:checked`);
+            selectedOptions.forEach(opt => opt.checked = false);
+
+            let qBtn = questionButtons[currentQuestion];
+            qBtn.classList.remove("answered", "review");
+            qBtn.classList.add("visited");
+            updateAnsweredCount();
+        });
+
+        document.getElementById("unmarkReview").addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent form submission
+            let qBtn = questionButtons[currentQuestion];
+
+            if (qBtn.classList.contains("review")) {
+                qBtn.classList.remove("review");
+
+                if (qBtn.classList.contains("answered")) {
+                    qBtn.classList.remove("visited");
+                } else {
+                    qBtn.classList.add("visited");
+                }
+            } else {
+                qBtn.classList.add("review");
+            }
+        });
+
+       
+            document.getElementById("submitTest").addEventListener("click", function (event) {
+                let totalQuestions = document.querySelectorAll(".question-nav").length;
+                let answeredQuestions = document.querySelectorAll(".question-nav.answered").length;
+                let unanswered = totalQuestions - answeredQuestions;
+
+                if (unanswered > 0) {
+                    alert(`You have ${unanswered} unanswered questions. Please review before submitting.`);
+                    event.preventDefault(); // Stop submission if there are unanswered questions
+                } else {
+                    if (confirm("You have answered all questions. Submit the test?")) {
+                        alert("Test submitted successfully! Redirecting to Home Page...");
+                        window.location.href = "/EmployeeDashboard/MyTest"; // Redirect to Home Page
+                    } else {
+                        event.preventDefault(); // Stop submission if the user cancels
+                    }
+                }
+            });
+
+
+        // ✅ **Fix: Timer Countdown**
+        let timeLeft = @testDuration * 60; // Convert minutes to seconds
+        function updateTimer() {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            document.getElementById("timer").textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            if (timeLeft > 0) {
+                timeLeft--;
+            } else {
+                clearInterval(timerInterval);
+                alert("Time is up! Submitting test...");
+                document.getElementById("submitTest").click(); // Auto-submit test
+            }
+        }
+
+        let timerInterval = setInterval(updateTimer, 1000); // Update timer every second
+    });
+
+    // Prevent Page Refresh (F5, Ctrl+R)
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "F5" || (event.ctrlKey && event.key === "r")) {
+            event.preventDefault();
+            alert("Page refresh is disabled during the test!");
+        }
+    });
+
+    // Disable Back Button
+    history.pushState(null, null, location.href);
+    window.onpopstate = function () {
+        history.pushState(null, null, location.href);
+        alert("Going back is not allowed during the test!");
+    };
+
+
+
+
+</script>
+
+@*     document.getElementById("submitTest").addEventListener("click", function (event) {
+            let totalQuestions = document.querySelectorAll(".question-nav").length;
+            let answeredQuestions = document.querySelectorAll(".question-nav.answered").length;
+            let unanswered = totalQuestions - answeredQuestions;
+
+            if (unanswered > 0) {
+                alert(`You have ${unanswered} unanswered questions. Please review before submitting.`);
+                event.preventDefault(); // Stop submission if there are unanswered questions
+            } else {
+                if (confirm("You have answered all questions. Submit the test?")) {
+                    document.getElementById("testForm").submit(); // Submit the form properly
+                } else {
+                    event.preventDefault(); // Stop submission if the user cancels
+                }
+            }
+        }); *@
+@*
+    // Warn Before Leaving the Page
+    window.onbeforeunload = function () {
+        return "Are you sure you want to leave? Your progress will be lost.";
+    };
+    let switchCount = 0; // Track the number of times the user switches tabs or applications
+    const maxSwitches = 5; // Set limit (adjust as needed)
+
+    document.addEventListener("visibilitychange", function () {
+        if (document.hidden) {
+            handleViolation();
+        }
+    });
+
+    window.addEventListener("blur", function () {
+        handleViolation();
+    });
+
+    function handleViolation() {
+        switchCount++;
+
+        let warningBox = document.getElementById("violationWarning");
+        if (!warningBox) {
+            warningBox = document.createElement("div");
+            warningBox.id = "violationWarning";
+            warningBox.style.position = "fixed";
+            warningBox.style.top = "10px";
+            warningBox.style.right = "10px";
+            warningBox.style.backgroundColor = "red";
+            warningBox.style.color = "white";
+            warningBox.style.padding = "10px";
+            warningBox.style.borderRadius = "5px";
+            warningBox.style.fontSize = "14px";
+            warningBox.style.zIndex = "1000";
+            document.body.appendChild(warningBox);
+        }
+
+        if (switchCount >= maxSwitches) {
+            warningBox.innerText = "Too many tab switches! Your test is being submitted...";
+            setTimeout(() => {
+                document.getElementById("submitTest").click(); // Auto-submit test
+            }, 2000);
+        } else {
+            warningBox.innerText = `Warning: Switching tabs is not allowed! (${switchCount}/${maxSwitches})`;
+            setTimeout(() => {
+                warningBox.style.display = "none";
+            }, 3000);
+        }
+    } *@
+
+
+@* @model List<ETMS.Models.Question>
+@{
+    ViewBag.Title = "Online Test";
+    var testDuration = ViewBag.TestDuration ?? 60; // Default to 60 minutes
+}
+<style>
+    /* General Page Styling */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Header */
+    .header {
+        background-color: #343a40;
+        color: white;
+        padding: 15px;
+        text-align: left;
+        font-size: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Question Card */
+    .question-card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background: #fff;
+        padding: 20px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background: #007bff;
+        color: white;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 5px 5px 0 0;
+    }
+
+    /* Question Options */
+    .form-check {
+        margin-bottom: 10px;
+    }
+
+    .form-check-input {
+        margin-right: 10px;
+    }
+
+    /* Navigation Buttons */
+    .btn {
+        padding: 10px 15px;
+        border-radius: 5px;
+        font-size: 16px;
+        margin: 5px;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-primary {
+        background: #007bff;
+    }
+
+    .btn-warning {
+        background: #ffc107;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+    }
+
+    /* Timer Section */
+    .card-body h5 {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    #timer {
+        color: red;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    /* Question Navigation Buttons */
+    .question-nav {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        margin: 3px;
+    }
+
+        .question-nav.answered {
+            background: #28a745;
+            color: white;
+        }
+
+        .question-nav.current {
+            background: #007bff;
+            color: white;
+        }
+
+</style>
+
+<div class="container">
+    <header class="header">
+        <h4>GATEFORUM Online Test</h4>
+        <div>
+            <strong>Test ID:</strong> test1 | <strong>Name:</strong> Narsimha Reddy
+        </div>
+    </header>
+
+    <div class="row mt-3">
+        <!-- Left Section: Question Display -->
+        <div class="col-md-8">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var question = Model[i];
+                <div class="card mb-3 question-card" id="question-@i" style="display: @(i == 0 ? "block" : "none");">
+                    <div class="card-header">
+                        <h5>Question @(i + 1)</h5>
+                        <span>Marks (Correct: 1 | Wrong: 0)</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="fw-bold">@Html.Raw(question.QuestionText)</p>
+                        <input type="hidden" name="answers[@i].QuestionId" value="@question.Id" />
+
+                        <!-- Multiple-Choice Options -->
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="answers[@i].SelectedOption" value="A" id="option-@i-A">
+                            <label class="form-check-label" for="option-@i-A">@question.OptionA</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="answers[@i].SelectedOption" value="B" id="option-@i-B">
+                            <label class="form-check-label" for="option-@i-B">@question.OptionB</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="answers[@i].SelectedOption" value="C" id="option-@i-C">
+                            <label class="form-check-label" for="option-@i-C">@question.OptionC</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="answers[@i].SelectedOption" value="D" id="option-@i-D">
+                            <label class="form-check-label" for="option-@i-D">@question.OptionD</label>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Navigation Buttons -->
+            <div class="d-flex justify-content-between mt-3">
+                <button class="btn btn-secondary" id="prevBtn">❮ Previous</button>
+                <button class="btn btn-warning" id="unmarkReview">Unmark Review</button>
+                <button class="btn btn-danger" id="clearResponse">Clear Response</button>
+                <button class="btn btn-primary" id="nextBtn">Next ❯</button>
+            </div>
+        </div>
+
+        <!-- Right Section: Timer & Question Navigation -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Answered Questions: <span id="answeredCount">0</span></div>
+                <div class="card-body">
+                    <h5>Time Left: <span id="timer">@testDuration:00</span></h5>
+                    <div class="d-flex flex-wrap">
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            <button class="btn btn-outline-secondary question-nav" data-index="@i">@(i + 1)</button>
+                        }
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-info">📄 Question Paper</button>
+                        <button class="btn btn-dark">❌ Exit Test</button>
+                        <button class="btn btn-success" id="submitTest">✅ Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Navigation & Timer -->
+<script>
+    let currentQuestion = 0;
+    let totalQuestions = @Model.Count;
+    let duration = @testDuration * 60;
+    let timerDisplay = document.getElementById("timer");
+
+    function updateQuestionDisplay() {
+        document.querySelectorAll(".question-card").forEach((card, index) => {
+            card.style.display = index === currentQuestion ? "block" : "none";
+        });
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", function () {
+        if (currentQuestion < totalQuestions - 1) {
+            currentQuestion++;
+            updateQuestionDisplay();
+        }
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", function () {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            updateQuestionDisplay();
+        }
+    });
+
+    document.querySelectorAll(".question-nav").forEach(button => {
+        button.addEventListener("click", function () {
+            currentQuestion = parseInt(this.getAttribute("data-index"));
+            updateQuestionDisplay();
+        });
+    });
+
+    let timerInterval = setInterval(() => {
+        let minutes = Math.floor(duration / 60);
+        let seconds = duration % 60;
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        duration--;
+        if (duration < 0) {
+            clearInterval(timerInterval);
+            alert("Time's up! Submitting your test.");
+            document.getElementById("submitTest").click();
+        }
+    }, 1000);
+</script> *@
+
+
+
+
+
+
+
+
+
+
+@* @model IEnumerable<ETMS.Models.Question>
+
+@{
+    ViewData["Title"] = "Answer Questions";
+    var duration = ViewBag.TestDuration * 60; // Convert minutes to seconds
+}
+
+<h2>Answer Questions for @ViewBag.TestType</h2>
+
+<div id="timer" class="alert alert-warning">Time Remaining: <span id="time"></span></div>
+
+<form id="testForm" asp-action="SubmitAnswers" method="post">
+    <input type="hidden" name="TestType" value="@ViewBag.TestType" />
+
+    @for (var i = 0; i < Model.Count(); i++)
+    {
+        var question = Model.ElementAt(i);
+        var questionNumber = i + 1;
+        <!-- This calculates the question number -->
+
+        <div class="mb-4">
+            <h5>@($"{questionNumber}. {question.QuestionText}")</h5> <!-- Display question number -->
+
+            <input type="hidden" name="Answers[@i].QuestionId" value="@question.Id" />
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="Answers[@i].SelectedOption" value="A" required />
+                <label class="form-check-label">@question.OptionA</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="Answers[@i].SelectedOption" value="B" required />
+                <label class="form-check-label">@question.OptionB</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="Answers[@i].SelectedOption" value="C" required />
+                <label class="form-check-label">@question.OptionC</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="Answers[@i].SelectedOption" value="D" required />
+                <label class="form-check-label">@question.OptionD</label>
+            </div>
+        </div>
+    }
+
+    <button type="submit" class="btn btn-success mt-3">Submit Answers</button>
+</form>
+
+<script>
+    let timeLeft = @duration;
+
+    function updateTimer() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById('time').textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            document.getElementById('testForm').submit();
+        } else {
+            timeLeft--;
+        }
+    }
+
+    const timerInterval = setInterval(updateTimer, 1000);
+    updateTimer();
+</script>
+ *@

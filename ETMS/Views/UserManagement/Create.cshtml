@@ -1,0 +1,161 @@
+﻿@model ETMS.Models.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Add User";
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<div class="container mt-4">
+    <div class="card shadow-lg p-4">
+        <h2 class="mb-4 text-center">Add New User</h2>
+
+        <form asp-controller="UserManagement" asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- Username -->
+            <div class="mb-3">
+                <label asp-for="UserName" class="form-label">Username</label>
+                <input asp-for="UserName" class="form-control" placeholder="Enter username" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email" type="email" class="form-control" placeholder="Enter email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+           @*  <!-- Password -->
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Password</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div> *@
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Password</label>
+                <div class="input-group">
+                    <input asp-for="Password" type="password" class="form-control" id="password" placeholder="Enter password" />
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('password', 'passwordIcon')">
+                        <i class="bi bi-eye-slash" id="passwordIcon"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                <div class="input-group">
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" id="confirmPassword" placeholder="Confirm password" />
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirmPassword', 'confirmPasswordIcon')">
+                        <i class="bi bi-eye-slash" id="confirmPasswordIcon"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+
+            <!-- Role -->
+            <div class="mb-3">
+                <label asp-for="Role" class="form-label">Role</label>
+                <select asp-for="Role" class="form-select">
+                    <option value="">-- Select Role --</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Trainer">Trainer</option>
+                    <option value="Employee">Employee</option>
+                </select>
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
+
+            <!-- Submit & Back Buttons -->
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                <button type="submit" class="btn btn-success">Add User</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye");
+        } else {
+            input.type = "password";
+            icon.classList.remove("bi-eye");
+            icon.classList.add("bi-eye-slash");
+        }
+    }
+</script>
+
+
+@* @model ETMS.Models.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Add User";
+}
+
+<div class="container mt-4">
+    <h2>Add New User</h2>
+
+    <form asp-controller="UserManagement" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <!-- Username -->
+        <div class="form-group">
+            <label asp-for="UserName">Username</label>
+            <input asp-for="UserName" class="form-control" placeholder="Enter username" />
+            <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+            <label asp-for="Email">Email</label>
+            <input asp-for="Email" class="form-control" placeholder="Enter email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+            <label asp-for="Password">Password</label>
+            <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="form-group">
+            <label asp-for="ConfirmPassword">Confirm Password</label>
+            <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm password" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+            <label asp-for="Role">Role</label>
+            <select asp-for="Role" class="form-control">
+                <option value="">-- Select Role --</option>
+                <option value="Admin">Admin</option>
+                <option value="Trainer">Trainer</option>
+                <option value="Employee">Employee</option>
+            </select>
+            <span asp-validation-for="Role" class="text-danger"></span>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-success">Add User</button>
+
+        <!-- Back Link -->
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </form>
+</div>
+ *@

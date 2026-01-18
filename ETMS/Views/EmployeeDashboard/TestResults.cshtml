@@ -1,0 +1,458 @@
+﻿@model IEnumerable<ETMS.Models.UserResponse>
+@{
+    ViewData["Title"] = "Employee Dashboard";
+}
+<head>
+    <title>@ViewData["Title"] - Employee Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* General Styles */
+        body {
+           
+            color: black;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            height: 100vh;
+            width: 260px;
+            position: fixed;
+            background: linear-gradient(to bottom, #0d253f, #101820);
+            padding-top: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+
+            .sidebar.collapsed {
+                width: 80px;
+            }
+
+            .sidebar .nav-link {
+                color: #ffffff;
+                font-size: 16px;
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                transition: all 0.3s ease;
+            }
+
+                .sidebar .nav-link i {
+                    min-width: 45px;
+                    text-align: center;
+                    transition: color 0.3s;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #172a45;
+                    font-weight: bold;
+                    border-left: 0px solid #00aaff;
+                }
+
+                    .sidebar .nav-link.active i {
+                        color: #00aaff;
+                    }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding-left: 0;
+            }
+
+                .sidebar.collapsed .nav-link span {
+                    display: none;
+                }
+
+        /* Navbar */
+        .navbar {
+            background: #172a45;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0, 170, 255, 0.2);
+        }
+
+        .navbar-brand, .navbar-user {
+            color: #ffffff;
+            font-size: 18px;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: #00aaff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Content */
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+            .content.full-width {
+                margin-left: 80px;
+            }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(to right, #1b3a57, #122438);
+            color: #ffffff;
+            border: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 10px;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+                box-shadow: 0px 4px 12px rgba(0, 170, 255, 0.3);
+                box-shadow: 0px 4px 15px rgba(255, 0, 0, 0.3); /* Soft glow effect */
+            }
+
+            .card i {
+                font-size: 35px;
+                margin-bottom: 10px;
+            }
+
+        .text-info {
+            color: #00c3ff !important;
+        }
+
+        .text-success {
+            color: #00ffcc !important;
+        }
+
+        .text-warning {
+            color: #ffaa00 !important;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar d-flex flex-column p-3" id="sidebar">
+        <ul class="nav flex-column" style="    margin-top: -11px;">
+            <li class="navbar">
+                <button class="menu-button" onclick="toggleSidebar()">☰</button>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " asp-controller="EmployeeDashboard" asp-action="Index">
+                    <i class="fas fa-home"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " asp-controller="EmployeeDashboard" asp-action="MyTest">
+                    <i class="fas fa-file-alt"></i> <span>My Tests</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyTraining">
+                    <i class="fas fa-book-open"></i> <span>My Training</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="AssignedProjects">
+                    <i class="fas fa-tasks"></i> <span>My Projects</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" asp-controller="EmployeeDashboard" asp-action="TestResults">
+                    <i class="fas fa-chart-bar"></i> <span>My Performance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyFeedback">
+                    <i class="fas fa-comment-dots"></i> <span>My Feedback</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link btn btn-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="content" id="content">
+        <nav class="navbar" style="margin-top: -20px; margin-left: -20px">
+            @* <button class="menu-button" onclick="toggleSidebar()">☰</button> *@
+            <span class="navbar-brand">Employee Dashboard</span>
+            <span class="navbar-user">Welcome, @ViewBag.Username</span>
+        </nav>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" style="margin-right:90px;">
+            <h2 class="text-center my-4">Your Test Results</h2>
+
+            <div class="row">
+                @foreach (var testType in new[] { "Pre-training", "Mid-training", "Post-training" })
+                {
+                    var userResponses = Model.Where(r => r.TestType == testType).ToList();
+                    var correctCount = userResponses.Count(r => r.SelectedOption == r.Question.CorrectAnswer);
+                    var totalQuestions = userResponses.Count;
+                    var score = totalQuestions > 0 ? $"{correctCount}/{totalQuestions}" : "N/A";
+                    var hasResults = userResponses.Any();
+
+                    <div class="col-md-4">
+                        <div class="card shadow-sm border-0 rounded">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">@testType</h5>
+                                <p class="card-text">
+                                    <strong>Score:</strong>
+                                    <span class="badge @(hasResults ? "bg-success" : "bg-secondary") fs-5">
+                                        @score
+                                    </span>
+                                </p>
+                                @if (hasResults)
+                                {
+                                    <a href="@Url.Action("AnswerSheet", "EmployeeDashboard", new { testType = testType })"
+                                       class="btn btn-primary btn-sm">
+                                        View Answer Sheet
+                                    </a>
+                                }
+                                else
+                                {
+                                    <p class="text-white">No results available</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </main>
+
+
+        
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.getElementById("content");
+            sidebar.classList.toggle("collapsed");
+            content.classList.toggle("full-width");
+        }
+    </script>
+</body>
+
+
+
+
+
+
+
+
+
+
+@* <!-- Employee Dashboard Test Results -->
+@model IEnumerable<ETMS.Models.UserResponse>
+
+<head>
+    <title>@ViewData["Title"] - Employee Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container-fluid {
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .navbar-user {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .sidebar {
+            height: 83vh;
+            padding-top: 20px;
+            background: #f4f4f4;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+            .sidebar .nav-link {
+                font-weight: 500;
+                color: #495057;
+                padding: 12px 20px;
+                border-radius: 8px;
+                transition: background 0.3s;
+            }
+
+                .sidebar .nav-link.active {
+                    background-color: #007bff;
+                    color: white;
+                }
+
+                .sidebar .nav-link:hover {
+                    background: #e9ecef;
+                    color: #007bff;
+                }
+
+        main {
+            padding: 0px;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            color: #343a40;
+        }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        @@media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+            }
+
+            main {
+                padding: 10px;
+            }
+
+            .card {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<div class="container-fluid">
+    <div class="navbar">
+        <div class="navbar-brand">Employee Dashboard</div>
+        <div class="navbar-user">Welcome, @ViewBag.Username</div>
+    </div>
+    <div class="row">
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="Index">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyTest">My Tests</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Training" asp-action="Index">My Training</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" asp-controller="EmployeeDashboard" asp-action="TestResults">My Performance</a>
+                    </li>
+                    <li class="nav-item">
+                        <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="nav-link btn btn-link">Log Out</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <h2 style="text-align: center;">Your Test Results</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Test Type</th>
+                        <th>Score</th>
+                        <th>Answer Sheet</th>
+                    </tr>
+                </thead>
+               
+
+               <tbody>
+                    @foreach (var testType in new[] { "Pre-training", "Mid-training", "Post-training" })
+                    {
+                        var userResponses = Model.Where(r => r.TestType == testType).ToList();
+                        if (userResponses.Any())
+                        {
+                            var correctCount = userResponses.Count(r => r.SelectedOption == r.Question.CorrectAnswer);
+                            var totalQuestions = userResponses.Count;
+                            var score = totalQuestions > 0 ? $"{correctCount}/{totalQuestions}" : "N/A";
+
+                            <tr>
+                                <td>@testType</td>
+                                <td>@score</td>
+                                <td>
+                                    <a href="@Url.Action("AnswerSheet", "EmployeeDashboard", new { testType = testType })">View</a>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td>@testType</td>
+                                <td>N/A</td>
+                                <td>-</td>
+                            </tr>
+                        }
+                    }
+                </tbody> 
+            </table>
+        </main>
+    </div>
+</div> *@

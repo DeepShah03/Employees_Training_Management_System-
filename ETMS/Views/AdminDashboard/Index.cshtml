@@ -1,0 +1,388 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<head>
+    <title>@ViewData["Title"] - Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+    <style>
+        body {
+            color: #ffffff;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 270px;
+            position: fixed;
+            background-color: #1e1e1e;
+            padding-top: 20px;
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+        }
+
+            .sidebar.collapsed {
+                width: 101px;
+            }
+
+            .sidebar .nav-link {
+                color: #ffffff;
+                font-size: 16px;
+                padding: 15px;
+                display: flex;
+                align-items: center;
+                transition: background 0.3s, padding-left 0.3s;
+                white-space: nowrap;
+            }
+
+                .sidebar .nav-link i {
+                    min-width: 52px;
+                    text-align: center;
+                    color: #ffffff;
+                    transition: color 0.3s;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #333;
+                    font-weight: bold;
+                }
+
+                    .sidebar .nav-link.active i {
+                        color: blue; /* Active icon color */
+                    }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding-left: 0;
+            }
+
+                .sidebar.collapsed .nav-link span {
+                    display: none;
+                }
+
+        .navbar {
+            background-color: #1e1e1e;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand, .navbar-user {
+            color: #ffffff;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+            .content.full-width {
+                margin-left: 80px;
+            }
+
+        .card {
+            background-color: #222;
+            color: #ffffff;
+            border: none;
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+            }
+    </style>
+
+</head>
+<body>
+    
+    <nav class="sidebar d-flex flex-column p-3" id="sidebar">
+        
+        <ul class="nav flex-column" style="    margin-top: -11px;">
+            <li class="navbar">
+                <button class="menu-button" onclick="toggleSidebar()">☰</button>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewData["Title"] == "Admin Dashboard" ? "active" : "")" asp-controller="AdminDashboard" asp-action="Index">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewData["Title"] == "User Management" ? "active" : "")" asp-controller="UserManagement" asp-action="Index">
+                    <i class="fas fa-users"></i> <span>User Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewData["Title"] == "Test Management" ? "active" : "")" asp-controller="AdminDashboard" asp-action="TestManagement">
+                    <i class="fas fa-tasks"></i> <span>Test Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewData["Title"] == "Assign Trainer" ? "active" : "")" asp-controller="AssignTrainer" asp-action="Index">
+                    <i class="fas fa-chalkboard-teacher"></i> <span>Assign Trainer</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewData["Title"] == "Reports & Analytics" ? "active" : "")" asp-controller="AdminDashboard" asp-action="Reports">
+                    <i class="fas fa-chart-line"></i> <span>Reports & Analytics</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link btn btn-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="content" id="content">
+        <nav class="navbar" style="margin-top: -21px;">
+            @* <button class="menu-button" onclick="toggleSidebar()">☰</button> *@
+            <span class="navbar-brand">Admin Dashboard</span>
+            <span class="navbar-user">Welcome, @ViewBag.AdminName</span>
+        </nav>
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card p-3 text-center">
+                        <h5><i class="fas fa-user"></i> Total Employees</h5>
+                        <p>@ViewBag.TotalEmployees Registered Employees</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 text-center">
+                        <h5><i class="fas fa-user-tie"></i> Total Trainers</h5>
+                        <p>@ViewBag.TotalTrainer Registered Trainers</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 text-center">
+                        <h5><i class="fas fa-book"></i> Active Training Programs</h5>
+                        <p>@ViewBag.ActiveTrainings Ongoing Programs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.getElementById("content");
+            sidebar.classList.toggle("collapsed");
+            content.classList.toggle("full-width");
+        }
+    </script>
+</body>
+
+
+
+
+
+
+
+
+
+
+
+
+@* @{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<head>
+    <title>@ViewData["Title"] - Admin Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container-fluid {
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .navbar-user {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .sidebar {
+            height: 83vh;
+            padding-top: 20px;
+            background: #f4f4f4;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+            .sidebar .nav-link {
+                font-weight: 500;
+                color: #495057;
+                padding: 12px 20px;
+                border-radius: 8px;
+                transition: background 0.3s;
+            }
+
+                .sidebar .nav-link.active {
+                    background-color: #343a40;
+                    color: white;
+                }
+
+                .sidebar .nav-link:hover {
+                    background: #e9ecef;
+                    color: #343a40;
+                }
+
+        main {
+            padding: 20px;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            color: #343a40;
+        }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+            }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .btn-light {
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        @@media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+            }
+
+            main {
+                padding: 10px;
+            }
+
+            .card {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<div class="container-fluid">
+    <div class="navbar">
+        <div class="navbar-brand">Admin Dashboard</div>
+        <div class="navbar-user">Welcome, @ViewBag.AdminName</div>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" asp-controller="AdminDashboard" asp-action="Index">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="UserManagement" asp-action="Index">User Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="AdminDashboard" asp-action="TestManagement">Test Management</a>
+                    </li>
+
+                  
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="AssignTrainer" asp-action="Index">Assign Trainer</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Reports" asp-action="Index">Reports & Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="nav-link btn btn-link">Log Out</button>
+                        </form>
+                    </li>
+
+                    
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <h2>Admin Dashboard Overview</h2>
+            <div class="row">
+                <!-- Total Employees Card -->
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Employees</h5>
+                            <p class="card-text">@ViewBag.TotalEmployees Registered Employees</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Tests Card -->
+                <div class="col-md-4">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Trainer</h5>
+                            <p class="card-text">@ViewBag.TotalTrainer Registered Trainer</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Training Programs Card -->
+                <div class="col-md-4">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Active Training Programs</h5>
+                            <p class="card-text">@ViewBag.ActiveTrainings Ongoing Programs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div> *@

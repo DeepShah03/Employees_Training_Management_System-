@@ -1,0 +1,74 @@
+﻿@model ETMS.Models.TestCompletionStatusViewModel
+
+@{
+    ViewData["Title"] = "Test Completion Status";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0">Test Completion Status for @Model.TestType</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-striped text-center">
+                <thead class="table-dark text-white">
+                    <tr>
+                        <th style="width: 10%;">NO</th>
+                        <th style="width: 45%;">Completed Employees</th>
+                        <th style="width: 45%;">Pending Employees</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Math.Max(Model.CompletedEmployees.Count, Model.RemainingEmployees.Count); i++)
+                    {
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@(i < Model.CompletedEmployees.Count ? Model.CompletedEmployees[i] : "-")</td>
+                            <td>@(i < Model.RemainingEmployees.Count ? Model.RemainingEmployees[i] : "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="d-flex justify-content-end mt-3">
+                <a asp-action="TestManagement" class="btn btn-dark">
+                    <i class="bi bi-arrow-left"></i> Back to Test Management
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@* @model ETMS.Models.TestCompletionStatusViewModel
+
+@{
+    ViewData["Title"] = "Test Completion Status";
+}
+
+<h3>Test Completion Status for @Model.TestType</h3>
+
+
+
+
+<table class="table table-bordered text-center">
+    <thead class="table-secondary">
+        <tr>
+            <th style="width: 10%;">NO</th>
+            <th style="width: 45%;">Completed Employees Name</th>
+            <th style="width: 45%;">Pending Employees Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Math.Max(Model.CompletedEmployees.Count, Model.RemainingEmployees.Count); i++)
+        {
+            <tr>
+                <td>@(i + 1)</td>
+                <td>@(i < Model.CompletedEmployees.Count ? Model.CompletedEmployees[i] : "")</td>
+                <td>@(i < Model.RemainingEmployees.Count ? Model.RemainingEmployees[i] : "")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-action="TestManagement" class="btn btn-dark mt-3">Back to Test Management</a>
+ *@

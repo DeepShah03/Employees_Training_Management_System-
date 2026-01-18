@@ -1,0 +1,95 @@
+﻿@model IEnumerable<ETMS.Models.UserResponse>
+
+@{
+    ViewData["Title"] = "Answer Sheet";
+}
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Answer Sheet - @ViewBag.TestType</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>No</th>
+                    <th class="text-start">Question</th>
+                    <th>Your Answer</th>
+                    <th>Correct Answer</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var questionNumber = 1;
+                }
+                @foreach (var response in Model)
+                {
+                    var isCorrect = response.SelectedOption == response.Question.CorrectAnswer;
+                    <tr>
+                        <td><strong>@questionNumber</strong></td>
+                        <td class="text-start">@response.Question.QuestionText</td>
+                        <td>@response.SelectedOption</td>
+                        <td>@response.Question.CorrectAnswer</td>
+                        <td>
+                            <span class="badge @(isCorrect ? "bg-success" : "bg-danger")">
+                                @(isCorrect ? "✅ Correct" : "❌ Incorrect")
+                            </span>
+                        </td>
+                    </tr>
+                    questionNumber++;
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="@Url.Action("TestResults", "EmployeeDashboard")" class="btn btn-primary">
+            Back to Test Results
+        </a>
+    </div>
+</div>
+
+
+@* @model IEnumerable<ETMS.Models.UserResponse>
+
+@{
+    ViewData["Title"] = "Answer Sheet";
+}
+
+<h2 style="text-align: center;">Answer Sheet - @ViewBag.TestType</h2>
+
+<table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black;">
+    <thead>
+        <tr style="background-color: #f2f2f2; border: 1px solid black;">
+            <th style="border: 1px solid black;">No</th>
+            <th style="border: 1px solid black;">Question</th>
+            <th style="border: 1px solid black;">Your Answer</th>
+            <th style="border: 1px solid black;">Correct Answer</th>
+            <th style="border: 1px solid black;">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            var questionNumber = 1;
+        }
+        @foreach (var response in Model)
+        {
+            var isCorrect = response.SelectedOption == response.Question.CorrectAnswer;
+            <tr style="border: 1px solid black;">
+                <td style="border: 1px solid black; "><b>@questionNumber</b></td>
+                <td style="border: 1px solid black; text-align:left">@response.Question.QuestionText</td>
+                <td style="border: 1px solid black;">@response.SelectedOption</td>
+                <td style="border: 1px solid black;">@response.Question.CorrectAnswer</td>
+                <td style="border: 1px solid black; color: @(isCorrect ? "green" : "red");">
+                    @(isCorrect ? "✅ Correct" : "❌ Incorrect")
+                </td>
+            </tr>
+            questionNumber++;
+        }
+    </tbody>
+</table>
+
+<div style="margin-top: 20px;">
+    <a href="@Url.Action("TestResults", "EmployeeDashboard")" class="btn btn-primary">Back to Test Results</a>
+</div>
+ *@

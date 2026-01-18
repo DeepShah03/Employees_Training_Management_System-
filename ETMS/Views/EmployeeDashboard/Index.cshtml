@@ -1,0 +1,806 @@
+﻿@{
+    ViewData["Title"] = "Employee Dashboard";
+}
+<head>
+    <title>@ViewData["Title"] - Employee Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* General Styles */
+        body {
+            
+            color: black;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            height: 100vh;
+            width: 260px;
+            position: fixed;
+            background: linear-gradient(to bottom, #0d253f, #101820);
+            padding-top: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+
+            .sidebar.collapsed {
+                width: 80px;
+            }
+
+            .sidebar .nav-link {
+                color: #ffffff;
+                font-size: 16px;
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                transition: all 0.3s ease;
+            }
+
+                .sidebar .nav-link i {
+                    min-width: 45px;
+                    text-align: center;
+                    transition: color 0.3s;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #172a45;
+                    font-weight: bold;
+                    border-left: 0px solid #00aaff;
+                }
+
+                    .sidebar .nav-link.active i {
+                        color: #00aaff;
+                    }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding-left: 0;
+            }
+
+                .sidebar.collapsed .nav-link span {
+                    display: none;
+                }
+
+        /* Navbar */
+        .navbar {
+            background: #172a45;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0, 170, 255, 0.2);
+        }
+
+        .navbar-brand, .navbar-user {
+            color: #ffffff;
+            font-size: 18px;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: #00aaff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Content */
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+            .content.full-width {
+                margin-left: 80px;
+            }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(to right, #1b3a57, #122438);
+            color: #ffffff;
+            border: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+                box-shadow: 0px 4px 12px rgba(0, 170, 255, 0.3);
+            }
+
+            .card i {
+                font-size: 35px;
+                margin-bottom: 10px;
+            }
+
+        .text-info {
+            color: #00c3ff !important;
+        }
+
+        .text-success {
+            color: #00ffcc !important;
+        }
+
+        .text-warning {
+            color: #ffaa00 !important;
+        }
+
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar d-flex flex-column p-3" id="sidebar" >
+        <ul class="nav flex-column" style="    margin-top: -11px;">
+            <li class="navbar">
+            <button class="menu-button" onclick="toggleSidebar()">☰</button>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" asp-controller="EmployeeDashboard" asp-action="Index">
+                    <i class="fas fa-home"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyTest">
+                    <i class="fas fa-file-alt"></i> <span>My Tests</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyTraining">
+                    <i class="fas fa-book-open"></i> <span>My Training</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="AssignedProjects">
+                    <i class="fas fa-tasks"></i> <span>My Projects</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="TestResults">
+                    <i class="fas fa-chart-bar"></i> <span>My Performance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyFeedback">
+                    <i class="fas fa-comment-dots"></i> <span>My Feedback</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link btn btn-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="content" id="content">
+        <nav class="navbar" style="margin-top: -20px; margin-left: -20px">
+            @* <button class="menu-button" onclick="toggleSidebar()">☰</button> *@
+            <span class="navbar-brand">Employee Dashboard</span>
+            <span class="navbar-user">Welcome, @ViewBag.Username</span>
+        </nav>
+
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-file-alt text-info"></i></h5>
+                            <h5>My Tests</h5>
+                            <p class="card-text">View upcoming and past tests.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-book-open text-success"></i></h5>
+                            <h5>My Training</h5>
+                            <p class="card-text">Access training modules.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-chart-bar text-warning"></i></h5>
+                            <h5>My Performance</h5>
+                            <p class="card-text">Track your test results.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.getElementById("content");
+            sidebar.classList.toggle("collapsed");
+            content.classList.toggle("full-width");
+        }
+    </script>
+</body>
+
+
+
+
+
+
+
+
+
+
+
+@* @{
+    ViewData["Title"] = "Employee Dashboard";
+}
+
+<head>
+    <title>@ViewData["Title"] - Employee Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            color: #ffffff;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 270px;
+            position: fixed;
+            background-color: #1e1e1e;
+            padding-top: 20px;
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+        }
+
+            .sidebar.collapsed {
+                width: 101px;
+            }
+
+            .sidebar .nav-link {
+                color: #ffffff;
+                font-size: 16px;
+                padding: 15px;
+                display: flex;
+                align-items: center;
+                transition: background 0.3s, padding-left 0.3s;
+                white-space: nowrap;
+            }
+
+                .sidebar .nav-link i {
+                    min-width: 52px;
+                    text-align: center;
+                    color: #ffffff;
+                    transition: color 0.3s;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #333;
+                    font-weight: bold;
+                }
+
+                    .sidebar .nav-link.active i {
+                        color: #ffcc00; /* Active icon color */
+                    }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding-left: 0;
+            }
+
+                .sidebar.collapsed .nav-link span {
+                    display: none;
+                }
+
+        .navbar {
+            background-color: #1e1e1e;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand, .navbar-user {
+            color: #ffffff;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+            .content.full-width {
+                margin-left: 80px;
+            }
+
+        .card {
+            background-color: #222;
+            color: #ffffff;
+            border: none;
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+            }
+    </style>
+</head>
+<body>
+    <nav class="sidebar d-flex flex-column p-3" id="sidebar">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" asp-controller="EmployeeDashboard" asp-action="Index">
+                    <i class="fas fa-home"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyTest">
+                    <i class="fas fa-file-alt"></i> <span>My Tests</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Training" asp-action="Index">
+                    <i class="fas fa-book-open"></i> <span>My Training</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="TestResults">
+                    <i class="fas fa-chart-bar"></i> <span>My Performance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link btn btn-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+    <div class="content" id="content">
+        <nav class="navbar" style="margin-top: -21px;">
+            <button class="menu-button" onclick="toggleSidebar()">☰</button>
+            <span class="navbar-brand">Employee Dashboard</span>
+            <span class="navbar-user">Welcome, @ViewBag.Username</span>
+        </nav>
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card p-4 text-center shadow-sm border-0 bg-dark text-white">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-file-alt fa-2x mb-2 text-info"></i></h5>
+                            <h5>My Tests</h5>
+                            <p class="card-text">View upcoming and past tests.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4 text-center shadow-sm border-0 bg-dark text-white">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-book-open fa-2x mb-2 text-success"></i></h5>
+                            <h5>My Training</h5>
+                            <p class="card-text">Access training modules and resources.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4 text-center shadow-sm border-0 bg-dark text-white">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-chart-bar fa-2x mb-2 text-warning"></i></h5>
+                            <h5>My Performance</h5>
+                            <p class="card-text">Track your test results and training progress.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.getElementById("content");
+            sidebar.classList.toggle("collapsed");
+            content.classList.toggle("full-width");
+        }
+    </script>
+</body> *@
+
+
+
+
+
+
+
+
+
+@* @{
+    ViewData["Title"] = "Employee Dashboard";
+}
+
+<head>
+    <title>@ViewData["Title"] - Employee Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            color: #ffffff;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 270px;
+            position: fixed;
+            background-color: #1e1e1e;
+            padding-top: 20px;
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+        }
+
+            .sidebar.collapsed {
+                width: 101px;
+            }
+
+            .sidebar .nav-link {
+                color: #ffffff;
+                font-size: 16px;
+                padding: 15px;
+                display: flex;
+                align-items: center;
+                transition: background 0.3s, padding-left 0.3s;
+                white-space: nowrap;
+            }
+
+                .sidebar .nav-link i {
+                    min-width: 52px;
+                    text-align: center;
+                    color: #ffffff;
+                    transition: color 0.3s;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #333;
+                    font-weight: bold;
+                }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding-left: 0;
+            }
+
+                .sidebar.collapsed .nav-link span {
+                    display: none;
+                }
+
+        .navbar {
+            background-color: #1e1e1e;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand, .navbar-user {
+            color: #ffffff;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+            .content.full-width {
+                margin-left: 80px;
+            }
+
+        .card {
+            background-color: #222;
+            color: #ffffff;
+            border: none;
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+            }
+    </style>
+</head>
+<body>
+    <nav class="sidebar d-flex flex-column p-3" id="sidebar">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" asp-controller="EmployeeDashboard" asp-action="Index">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyTest">
+                    <i class="fas fa-file-alt"></i> <span>My Tests</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Training" asp-action="Index">
+                    <i class="fas fa-book"></i> <span>My Training</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="TestResults">
+                    <i class="fas fa-chart-line"></i> <span>My Performance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link btn btn-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="content" id="content">
+        <nav class="navbar" style="margin-top: -21px;">
+            <button class="menu-button" onclick="toggleSidebar()">☰</button>
+            <span class="navbar-brand">Employee Dashboard</span>
+            <span class="navbar-user">Welcome, @ViewBag.Username</span>
+        </nav>
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card p-3 text-center">
+                        <h5><i class="fas fa-file-alt"></i> My Tests</h5>
+                        <p>View upcoming and past tests.</p>
+                        <a asp-controller="Tests" asp-action="Index" class="btn btn-primary">View Tests</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 text-center">
+                        <h5><i class="fas fa-book"></i> My Training</h5>
+                        <p>Access training modules and resources.</p>
+                        <a asp-controller="Training" asp-action="Index" class="btn btn-success">View Training</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 text-center">
+                        <h5><i class="fas fa-chart-line"></i> My Performance</h5>
+                        <p>Track your test results and training progress.</p>
+                        <a asp-controller="Performance" asp-action="Index" class="btn btn-warning">View Performance</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.getElementById("content");
+            sidebar.classList.toggle("collapsed");
+            content.classList.toggle("full-width");
+        }
+    </script>
+</body>
+
+ *@
+
+
+
+
+
+
+
+@* 
+@{
+    ViewData["Title"] = "Employee Dashboard";
+}
+<head>
+    <title>@ViewData["Title"] - Employee Dashboard</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container-fluid {
+            padding: 0;
+            /* margin-left: -70px; */
+        }
+        /* Navbar Styles */
+        .navbar {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .navbar-user {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        /* Sidebar Styles */
+        .sidebar {
+            height: 83vh;
+            padding-top: 20px;
+            background: #f4f4f4;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+            .sidebar .nav-link {
+                font-weight: 500;
+                color: #495057;
+                padding: 12px 20px;
+                border-radius: 8px;
+                transition: background 0.3s;
+            }
+
+                .sidebar .nav-link.active {
+                    background-color: #007bff;
+                    color: white;
+                }
+
+                .sidebar .nav-link:hover {
+                    background: #e9ecef;
+                    color: #007bff;
+                }
+
+        /* Main Content */
+        main {
+            padding: 0px;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            color: #343a40;
+        }
+
+        /* Dashboard Cards */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+            }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .card-body p {
+            font-size: 1rem;
+        }
+
+        .btn-light {
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+            }
+
+            main {
+                padding: 10px;
+            }
+
+            .card {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<div class="container-fluid">
+    <div class="navbar">
+        <div class="navbar-brand">Employee Dashboard</div>
+        <div class="navbar-user">Welcome, @ViewBag.Username</div>
+    </div>
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" asp-controller="EmployeeDashboard" asp-action="Index">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="MyTest">My Tests</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Training" asp-action="Index">My Training</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="EmployeeDashboard" asp-action="TestResults">My Performance</a>
+                    </li>
+                    <li class="nav-item">
+                        <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="nav-link btn btn-link">Log Out</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <h2>Employee Dashboard</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">My Tests</h5>
+                            <p class="card-text">View upcoming and past tests.</p>
+                            <a asp-controller="Tests" asp-action="Index" class="btn btn-light">View Tests</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">My Training</h5>
+                            <p class="card-text">Access training modules and resources.</p>
+                            <a asp-controller="Training" asp-action="Index" class="btn btn-light">View Training</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">My Performance</h5>
+                            <p class="card-text">Track your test results and training progress.</p>
+                            <a asp-controller="Performance" asp-action="Index" class="btn btn-light">View Performance</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div> *@

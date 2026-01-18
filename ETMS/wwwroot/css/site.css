@@ -1,0 +1,140 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+/*
+
+
+ css
+
+
+*/
+/*@import "compass/css3";
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    background: #95a5a6;
+    background-image: url(http://subtlepatterns2015.subtlepatterns.netdna-cdn.com/patterns/dark_embroidery.png);
+    font-family: 'Helvetica Neue', Arial, Sans-Serif;
+}*/
+
+/* Shared Styles for Login and Register Forms */
+/*.auth-wrap {
+    position: relative;
+    margin: 50px auto;
+    background: #ecf0f1;
+    width: 350px;
+    border-radius: 5px;
+    box-shadow: 3px 3px 10px #333;
+    padding: 15px;
+}
+
+    .auth-wrap h2 {
+        text-align: center;
+        font-weight: 200;
+        font-size: 2em;
+        margin-top: 10px;
+        color: #34495e;
+    }
+
+.auth-form {
+    padding-top: 20px;
+}
+
+    .auth-form input[type="text"],
+    .auth-form input[type="password"],
+    .auth-form input[type="email"],
+    .auth-form select,
+    .auth-form button {
+        width: 80%;
+        margin-left: 10%;
+        margin-bottom: 15px;
+        height: 40px;
+        border-radius: 5px;
+        outline: 0;
+        -moz-outline-style: none;
+    }
+
+    .auth-form input[type="text"],
+    .auth-form input[type="password"],
+    .auth-form input[type="email"],
+    .auth-form select {
+        border: 1px solid #bbb;
+        padding: 0 0 0 10px;
+        font-size: 14px;
+    }
+
+        .auth-form input:focus,
+        .auth-form select:focus {
+            border: 1px solid #3498db;
+        }
+
+    .auth-form .remember-me {
+        text-align: center;
+        font-size: 14px;
+    }
+
+        .auth-form .remember-me label {
+            cursor: pointer;
+        }
+
+    .auth-form a {
+        text-align: center;
+        font-size: 12px;
+        color: #3498db;
+        display: block;
+    }
+
+    .auth-form button {
+        background: #e74c3c;
+        border: none;
+        color: white;
+        font-size: 18px;
+        font-weight: 200;
+        cursor: pointer;
+        transition: box-shadow .4s ease;
+    }
+
+        .auth-form button:hover {
+            box-shadow: 1px 1px 5px #555;
+        }
+
+        .auth-form button:active {
+            box-shadow: 1px 1px 7px #222;
+        }*/
+
+/* Gradient Top Border */
+/*.auth-wrap:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to right, #27ae60 0%, #27ae60 20%, #8e44ad 20%, #8e44ad 40%, #3498db 40%, #3498db 60%, #e74c3c 60%, #e74c3c 80%, #f1c40f 80%, #f1c40f 100%);
+    height: 5px;
+    border-radius: 5px 5px 0 0;
+}*/

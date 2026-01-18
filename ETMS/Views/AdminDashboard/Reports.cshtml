@@ -1,0 +1,461 @@
+﻿@model List<ETMS.Models.EmployeeReport>
+@{
+    ViewData["Title"] = "Reports & Analytics";
+}
+
+
+<head>
+    <title>@ViewData["Title"] - Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            color: #ffffff;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 270px;
+            position: fixed;
+            background-color: #1e1e1e;
+            padding-top: 20px;
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+        }
+
+            .sidebar.collapsed {
+                width: 101px;
+            }
+
+            .sidebar .nav-link {
+                color: #ffffff;
+                font-size: 16px;
+                padding: 15px;
+                display: flex;
+                align-items: center;
+                transition: background 0.3s, padding-left 0.3s;
+                white-space: nowrap;
+            }
+
+                .sidebar .nav-link i {
+                    min-width: 52px;
+                    text-align: center;
+                    color: #ffffff;
+                    transition: color 0.3s;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #333;
+                    font-weight: bold;
+                }
+
+                    .sidebar .nav-link.active i {
+                        color: blue; /* Active icon color */
+                    }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding-left: 0;
+            }
+
+                .sidebar.collapsed .nav-link span {
+                    display: none;
+                }
+
+        .navbar {
+            background-color: #1e1e1e;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand, .navbar-user {
+            color: #ffffff;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+            .content.full-width {
+                margin-left: 80px;
+            }
+
+        .card {
+            background-color: #222;
+            color: #ffffff;
+            border: none;
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+            }
+    </style>
+
+</head>
+<body>
+
+    <nav class="sidebar d-flex flex-column p-3" id="sidebar">
+
+        <ul class="nav flex-column" style="    margin-top: -11px;">
+            <li class="navbar">
+                <button class="menu-button" onclick="toggleSidebar()">☰</button>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewData["Title"] == "Admin Dashboard" ? "active" : "")" asp-controller="AdminDashboard" asp-action="Index">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewData["Title"] == "User Management" ? "active" : "")" asp-controller="UserManagement" asp-action="Index">
+                    <i class="fas fa-users"></i> <span>User Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewData["Title"] == "Test Management" ? "active" : "")" asp-controller="AdminDashboard" asp-action="TestManagement">
+                    <i class="fas fa-tasks"></i> <span>Test Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewData["Title"] == "Assign Trainer" ? "active" : "")" asp-controller="AssignTrainer" asp-action="Index">
+                    <i class="fas fa-chalkboard-teacher"></i> <span>Assign Trainer</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewData["Title"] == "Reports & Analytics" ? "active" : "")" asp-controller="AdminDashboard" asp-action="Reports">
+                    <i class="fas fa-chart-line"></i> <span>Reports & Analytics</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link btn btn-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="content" id="content">
+        <nav class="navbar" style="margin-top: -21px;">
+            @* <button class="menu-button" onclick="toggleSidebar()">☰</button> *@
+            <span class="navbar-brand">Admin Dashboard</span>
+            <span class="navbar-user">Welcome, @ViewBag.AdminName</span>
+        </nav>
+        <div class="container mt-4">
+
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Employee Name</th>
+                        <th>Trainer Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var report in Model)
+                    {
+                        <tr>
+                            <td>@report.Employee?.UserName</td>
+                            <td>@report.Trainer?.UserName</td>
+
+                            <td>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reportModal_@report.Id">
+                                    View
+                                </button>
+
+                                <!-- Modal -->
+                                <div class="modal fade" id="reportModal_@report.Id" tabindex="-1" aria-labelledby="reportModalLabel_@report.Id" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-scrollable">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="reportModalLabel_@report.Id">Report for @report.Employee?.UserName</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Trainer:</strong> @report.Trainer?.UserName</p>
+                                                <p><strong>Project Marks:</strong> @report.ProjectMarks</p>
+                                                <p><strong>Pre-Training Marks:</strong> @report.PreTrainingMarks</p>
+                                                <p><strong>Mid-Training Marks:</strong> @report.MidTrainingMarks</p>
+                                                <p><strong>Post-Training Marks:</strong> @report.PostTrainingMarks</p>
+                                                <p><strong>Feedback:</strong> @report.Feedback</p>
+                                                @{
+                                                    var map = new Dictionary<string, string>
+                                            {
+                                            { "Timeliness", "Punctuality & Attendance - Timeliness in attending training sessions" },
+                                            { "Break Schedule", "Punctuality & Attendance - Adherence to break schedules" },
+                                            { "Attendance", "Punctuality & Attendance - Consistency in attendance" },
+                                            { "Interaction", "Participation & Engagement - Level of interaction during training" },
+                                            { "Asking Questions", "Participation & Engagement - Willingness to ask questions" },
+                                            { "Group Work", "Participation & Engagement - Contribution to group discussions" },
+                                            { "Assessment Performance", "Learning Progress - Performance in assessments" },
+                                            { "Application", "Learning Progress - Ability to apply learned concepts" },
+                                            { "Improvement", "Learning Progress - Improvement over time" },
+                                            { "Analysis", "Problem-Solving - Ability to analyze scenarios" },
+                                            { "Troubleshooting", "Problem-Solving - Approach to troubleshooting issues" },
+                                            { "Creativity", "Problem-Solving - Creativity in problem-solving" },
+                                            { "Clarity", "Communication Skills - Clarity in expressing thoughts" },
+                                            { "Confidence", "Communication Skills - Confidence in presenting information" },
+                                            { "Listening", "Communication Skills - Active listening skills" },
+                                            { "Teamwork", "Teamwork - Ability to work effectively in a team" },
+                                            { "Support", "Teamwork - Willingness to support peers" },
+                                            { "Adaptability", "Teamwork - Adaptability to different team roles" },
+                                            { "Feedback Acceptance", "Adaptability - Readiness to accept feedback" },
+                                            { "Learning", "Adaptability - Willingness to learn new concepts" },
+                                            { "Training Styles", "Adaptability - Ability to adjust to training styles" },
+                                            { "Hands-on", "Practical Application - Hands-on implementation of training" },
+                                            { "Task Quality", "Practical Application - Quality and accuracy of task completion" },
+                                            { "Efficiency", "Practical Application - Efficiency in real-world scenarios" },
+                                            { "Respect", "Professionalism - Respect for trainers and peers" },
+                                            { "Discipline", "Professionalism - Discipline in following guidelines" },
+                                            { "Accountability", "Professionalism - Accountability for assigned tasks" },
+                                            { "Beyond Basics", "Self-Motivation - Willingness to go beyond basic requirements" },
+                                            { "Proactive", "Self-Motivation - Proactive approach to learning" },
+                                            { "Additional Resources", "Self-Motivation - Seeking additional learning resources" }
+                                            };
+                                                }
+
+                                                <div class="mt-4">
+                                                    <h6 class="fw-bold ">Feedback Criteria</h6>
+                                                    @if (!string.IsNullOrWhiteSpace(report.FeedbackCriteria))
+                                                    {
+                                                        <div class="row">
+                                                            @{
+                                                                int counter = 1;
+                                                            }
+
+                                                            @foreach (var criteria in report.FeedbackCriteria.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                                            {
+                                                                var trimmed = criteria.Trim();
+                                                                if (map.ContainsKey(trimmed))
+                                                                {
+                                                                    var fullText = map[trimmed];
+                                                                    var parts = fullText.Split(" - ", 2);
+                                                                    var category = parts[0];
+                                                                    var description = parts.Length > 1 ? parts[1] : "";
+
+                                                                    <div class="col-md-6 mb-3">
+                                                                        <div class="p-3 bg-light border rounded-3 h-100 shadow-sm">
+                                                                            <strong class="text-primary">@counter. @category</strong>
+                                                                            <div class="text-muted ms-2">- @description</div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    counter++;
+                                                                }
+                                                                else
+                                                                {
+                                                                    <div class="col-md-6 mb-3">
+                                                                        <div class="p-3 bg-light border rounded-3 h-100 shadow-sm">
+                                                                            <strong class="text-danger">@counter. Unknown</strong>
+                                                                            <div class="text-muted ms-2">- @trimmed</div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    counter++;
+                                                                }
+                                                            }
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="text-muted">No Feedback Criteria Available</div>
+                                                    }
+                                                </div>
+                                                <p><strong>Date:</strong> @report.CreatedAt.ToString("dd MMM yyyy HH:mm")</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+           
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const content = document.getElementById("content");
+            sidebar.classList.toggle("collapsed");
+            content.classList.toggle("full-width");
+        }
+    </script>
+</body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* @model List<ETMS.Models.EmployeeReport>
+@{
+    ViewData["Title"] = "Reports & Analytics";
+}
+
+<h2 class="mb-4">All Generated Reports</h2>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Employee Name</th>
+            <th>Trainer Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var report in Model)
+        {
+            <tr>
+                <td>@report.Employee?.UserName</td>
+                <td>@report.Trainer?.UserName</td>
+               
+                <td>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reportModal_@report.Id">
+                        View
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="reportModal_@report.Id" tabindex="-1" aria-labelledby="reportModalLabel_@report.Id" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="reportModalLabel_@report.Id">Report for @report.Employee?.UserName</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>Trainer:</strong> @report.Trainer?.UserName</p>
+                                    <p><strong>Project Marks:</strong> @report.ProjectMarks</p>
+                                    <p><strong>Pre-Training Marks:</strong> @report.PreTrainingMarks</p>
+                                    <p><strong>Mid-Training Marks:</strong> @report.MidTrainingMarks</p>
+                                    <p><strong>Post-Training Marks:</strong> @report.PostTrainingMarks</p>
+                                    <p><strong>Feedback:</strong> @report.Feedback</p>
+                                    @{
+                                        var map = new Dictionary<string, string>
+                                {
+                                { "Timeliness", "Punctuality & Attendance - Timeliness in attending training sessions" },
+                                { "Break Schedule", "Punctuality & Attendance - Adherence to break schedules" },
+                                { "Attendance", "Punctuality & Attendance - Consistency in attendance" },
+                                { "Interaction", "Participation & Engagement - Level of interaction during training" },
+                                { "Asking Questions", "Participation & Engagement - Willingness to ask questions" },
+                                { "Group Work", "Participation & Engagement - Contribution to group discussions" },
+                                { "Assessment Performance", "Learning Progress - Performance in assessments" },
+                                { "Application", "Learning Progress - Ability to apply learned concepts" },
+                                { "Improvement", "Learning Progress - Improvement over time" },
+                                { "Analysis", "Problem-Solving - Ability to analyze scenarios" },
+                                { "Troubleshooting", "Problem-Solving - Approach to troubleshooting issues" },
+                                { "Creativity", "Problem-Solving - Creativity in problem-solving" },
+                                { "Clarity", "Communication Skills - Clarity in expressing thoughts" },
+                                { "Confidence", "Communication Skills - Confidence in presenting information" },
+                                { "Listening", "Communication Skills - Active listening skills" },
+                                { "Teamwork", "Teamwork - Ability to work effectively in a team" },
+                                { "Support", "Teamwork - Willingness to support peers" },
+                                { "Adaptability", "Teamwork - Adaptability to different team roles" },
+                                { "Feedback Acceptance", "Adaptability - Readiness to accept feedback" },
+                                { "Learning", "Adaptability - Willingness to learn new concepts" },
+                                { "Training Styles", "Adaptability - Ability to adjust to training styles" },
+                                { "Hands-on", "Practical Application - Hands-on implementation of training" },
+                                { "Task Quality", "Practical Application - Quality and accuracy of task completion" },
+                                { "Efficiency", "Practical Application - Efficiency in real-world scenarios" },
+                                { "Respect", "Professionalism - Respect for trainers and peers" },
+                                { "Discipline", "Professionalism - Discipline in following guidelines" },
+                                { "Accountability", "Professionalism - Accountability for assigned tasks" },
+                                { "Beyond Basics", "Self-Motivation - Willingness to go beyond basic requirements" },
+                                { "Proactive", "Self-Motivation - Proactive approach to learning" },
+                                { "Additional Resources", "Self-Motivation - Seeking additional learning resources" }
+                                };
+                                    }
+
+                                    <div class="mt-4">
+                                        <h6 class="fw-bold ">Feedback Criteria</h6>
+                                        @if (!string.IsNullOrWhiteSpace(report.FeedbackCriteria))
+                                        {
+                                            <div class="row">
+                                                @{
+                                                    int counter = 1;
+                                                }
+
+                                                @foreach (var criteria in report.FeedbackCriteria.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                                {
+                                                    var trimmed = criteria.Trim();
+                                                    if (map.ContainsKey(trimmed))
+                                                    {
+                                                        var fullText = map[trimmed];
+                                                        var parts = fullText.Split(" - ", 2);
+                                                        var category = parts[0];
+                                                        var description = parts.Length > 1 ? parts[1] : "";
+
+                                                        <div class="col-md-6 mb-3">
+                                                            <div class="p-3 bg-light border rounded-3 h-100 shadow-sm">
+                                                                <strong class="text-primary">@counter. @category</strong>
+                                                                <div class="text-muted ms-2">- @description</div>
+                                                            </div>
+                                                        </div>
+
+                                                        counter++;
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="col-md-6 mb-3">
+                                                            <div class="p-3 bg-light border rounded-3 h-100 shadow-sm">
+                                                                <strong class="text-danger">@counter. Unknown</strong>
+                                                                <div class="text-muted ms-2">- @trimmed</div>
+                                                            </div>
+                                                        </div>
+
+                                                        counter++;
+                                                    }
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="text-muted">No Feedback Criteria Available</div>
+                                        }
+                                    </div>
+                                    <p><strong>Date:</strong> @report.CreatedAt.ToString("dd MMM yyyy HH:mm")</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+ *@
